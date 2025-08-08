@@ -29,6 +29,27 @@ void ATPSCharacter::BeginPlay()
 	// if ( !subsystem ) return;
 	//
 	// subsystem->AddMappingContext(  )
+
+	TArray< UChildActorComponent* > childActorComponents;
+	GetComponents( UChildActorComponent::StaticClass(), childActorComponents );
+
+	for ( UChildActorComponent* childActorComponent : childActorComponents )
+	{
+		if ( !childActorComponent ) continue;
+		
+		if ( childActorComponent->GetName().Equals( TPSCameraCompName ) )
+		{
+			TPSCameraComp = childActorComponent;
+		}
+		else if ( childActorComponent->GetName().Equals( TPSZoomCameraCompName ) )
+		{
+			TPSZoomCameraComp = childActorComponent;
+		}
+		else if ( childActorComponent->GetName().Equals( FPSCameraCompName ) )
+		{
+			FPSCameraComp = childActorComponent;
+		}
+	}
 }
 
 // Called every frame
@@ -61,5 +82,20 @@ void ATPSCharacter::LookAround( const FInputActionValue& Value )
 
 	AddControllerYawInput  ( Value.Get< FVector2D >().X );
 	AddControllerPitchInput( Value.Get< FVector2D >().Y );
+}
+
+// 카메라 시점을 변경한다.
+void ATPSCharacter::ToggleCameraMode( const FInputActionValue& Value )
+{
+	if ( Value.GetValueType() != EInputActionValueType::Boolean ) return;
+
+	APlayerController* playerController = Cast< APlayerController >( GetController() );
+	if ( !playerController ) return;
+
+	if ( !TPSCameraComp || !TPSZoomCameraComp || !FPSCameraComp ) return;
+
+	IsTPSMode = !IsTPSMode;
+	
+	playerController->SetViewTargetWithBlend( IsTPSMode ? TPSCameraComp->GetChildActor() : FPSCameraComp->GetChildActor(), 0.2f );
 }
 

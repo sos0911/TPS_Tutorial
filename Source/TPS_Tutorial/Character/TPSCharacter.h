@@ -22,6 +22,17 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> MoveAction;
 
+private:
+	const FString TPSCameraCompName     = TEXT( "TPSCamera"     );
+	const FString TPSZoomCameraCompName = TEXT( "TPSZoomCamera" );
+	const FString FPSCameraCompName     = TEXT( "FPSCamera"     );
+
+	UChildActorComponent* TPSCameraComp     = nullptr;
+	UChildActorComponent* TPSZoomCameraComp = nullptr;
+	UChildActorComponent* FPSCameraComp     = nullptr;
+
+	bool IsTPSMode = true; // TPS 모드인가 여부
+
 public:
 	// Sets default values for this character's properties
 	ATPSCharacter();
@@ -45,4 +56,8 @@ protected:
 	// 시점을 이동한다.
 	UFUNCTION( BlueprintCallable, Category = "Character Control" )
 	void LookAround( const FInputActionValue& Value );
+
+	// 카메라 시점을 변경한다.
+	UFUNCTION( BlueprintCallable, Category = "Camera Control" )
+	void ToggleCameraMode( const FInputActionValue& Value );
 };
