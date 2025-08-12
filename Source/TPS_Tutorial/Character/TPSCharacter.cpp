@@ -50,6 +50,23 @@ void ATPSCharacter::BeginPlay()
 			FPSCameraComp = childActorComponent;
 		}
 	}
+
+	TArray< USkeletalMeshComponent* > meshComponents;
+	GetComponents( USkeletalMeshComponent::StaticClass(), meshComponents );
+
+	for ( USkeletalMeshComponent* meshComponent : meshComponents )
+	{
+		if ( !meshComponent ) continue;
+
+		if ( meshComponent->GetName().Equals( "Face" ) )
+		{
+			FaceComp = meshComponent;
+			break;
+		}
+	}
+
+	IsTPSMode  = true;
+	IsZoomMode = false;
 }
 
 // Called every frame
@@ -95,7 +112,40 @@ void ATPSCharacter::ToggleCameraMode( const FInputActionValue& Value )
 	if ( !TPSCameraComp || !TPSZoomCameraComp || !FPSCameraComp ) return;
 
 	IsTPSMode = !IsTPSMode;
+
+	float cameraBlendTime = 0.2f;
+	playerController->SetViewTargetWithBlend( IsTPSMode ? TPSCameraComp->GetChildActor() : FPSCameraComp->GetChildActor(), cameraBlendTime );
+
+	TWeakObjectPtr< ATPSCharacter > thisPtr = this;
+	auto ftrToggleFaceCompVisibility = [ this, thisPtr ] ()
+	{
+		if ( !thisPtr.IsValid() ) return;
+		
+		if ( FaceComp ) FaceComp->SetHiddenInGame( !IsTPSMode, true );
+	};
 	
-	playerController->SetViewTargetWithBlend( IsTPSMode ? TPSCameraComp->GetChildActor() : FPSCameraComp->GetChildActor(), 0.2f );
+	if ( IsTPSMode )
+	{
+		ftrToggleFaceCompVisibility();
+	}
+	else
+	{
+		FTimerHandle timerHandle;
+		GetWorldTimerManager().SetTimer( timerHandle, ftrToggleFaceCompVisibility, cameraBlendTime, false );
+	}
+}
+
+// 줌 시점을 변경한다.
+void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
+{
+	if ( Value.GetValueType() != EInputActionValueType::Boolean ) return;
+
+	APlayerController* playerController = Cast< APlayerController >( GetController() );
+	if ( !playerController ) return;
+
+	IsZoomMode = !IsZoomMode;
+
+	float cameraBlendTime = 0.2f;
+	playerController->SetViewTargetWithBlend( IsZoomMode ? TPSZoomCameraComp->GetChildActor() : TPSCameraComp->GetChildActor(), cameraBlendTime );
 }
 

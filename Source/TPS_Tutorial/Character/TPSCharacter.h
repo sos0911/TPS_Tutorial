@@ -27,11 +27,13 @@ private:
 	const FString TPSZoomCameraCompName = TEXT( "TPSZoomCamera" );
 	const FString FPSCameraCompName     = TEXT( "FPSCamera"     );
 
-	UChildActorComponent* TPSCameraComp     = nullptr;
-	UChildActorComponent* TPSZoomCameraComp = nullptr;
-	UChildActorComponent* FPSCameraComp     = nullptr;
+	UChildActorComponent*   TPSCameraComp     = nullptr;
+	UChildActorComponent*   TPSZoomCameraComp = nullptr;
+	UChildActorComponent*   FPSCameraComp     = nullptr;
+	USkeletalMeshComponent* FaceComp		  = nullptr;
 
-	bool IsTPSMode = true; // TPS 모드인가 여부
+	bool IsTPSMode  = true;  // TPS 모드인가 여부
+	bool IsZoomMode = false; // zoom 모드인가 여부 
 
 public:
 	// Sets default values for this character's properties
@@ -60,4 +62,8 @@ protected:
 	// 카메라 시점을 변경한다.
 	UFUNCTION( BlueprintCallable, Category = "Camera Control" )
 	void ToggleCameraMode( const FInputActionValue& Value );
+
+	// 줌 시점을 변경한다.
+	UFUNCTION( BlueprintCallable, Category = "Camera Control" )
+	void ToggleZoomMode( const FInputActionValue& Value );
 };
