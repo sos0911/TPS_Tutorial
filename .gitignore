@@ -43,6 +43,10 @@ Plugins/*/Saved/
 *.log
 *.VC.opendb
 
+# setting files
+.vsconfig
+*.sln
+
 # macOS specific files
 .DS_Store
 
