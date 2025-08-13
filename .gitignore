@@ -1,0 +1,95 @@
+# This .gitignore file is based on the official Unreal Engine .gitignore template
+# from GitHub, with common additions for user and IDE specific files.
+
+# Unreal Engine Generated Files
+# Most of these directories are generated during the build process and should not be version controlled.
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Plugins can also have their own generated files
+Plugins/*/Binaries/
+Plugins/*/Build/
+Plugins/*/Intermediate/
+Plugins/*/Saved/
+
+# Launcher generated files for .uproject
+*.uproject.bak
+*.uproject.tmp
+*.uproject.user
+
+# Visual Studio / Rider / VSCode Specific Files
+# IDE-specific configuration and temporary files.
+.vs/
+.idea/
+.vscode/
+
+# Visual Studio specific files
+*.VC.db
+*.opensdf
+*.sdf
+*.suo
+*.user
+*.ncb
+*.vshost.exe
+*.vshost.exe.config
+*.obj
+*.pdb
+*.ipch
+*.aps
+*.res
+*.log
+*.VC.opendb
+
+# macOS specific files
+.DS_Store
+
+# Windows specific files
+Thumbs.db
+
+# Logs
+# Log files should generally not be version controlled.
+Log.txt
+*/Logs/
+
+# Crash Reports
+# Generated when the engine crashes.
+CrashReportClient/
+
+# DDC files (Derived Data Cache)
+# These are per-user local caches.
+*/DDC/
+
+# Editor specific (optional, but sometimes useful)
+# Depending on your workflow, you might want to ignore these.
+# Typically, Editor/ and Development/ are part of the engine itself,
+# but sometimes project-specific editor builds or development assets might appear here.
+# For most projects, these aren't necessary unless you're modifying the engine itself.
+# Editor/
+# Development/
+
+# Miscellaneous temporary files
+*.backup
+*.tmp
+*.swp
+*~
+
+# Exclude all executable and library files from Binaries and Build folders,
+# but keep them if they are in the root directory.
+# This is usually covered by excluding the Binaries/ and Build/ folders directly,
+# but provides an extra layer for files that might escape.
+# *.dll
+# *.exe
+# *.lib
+# *.a
+# *.so
+
+# Note on Content Folder:
+# Generally, you DO NOT want to ignore the 'Content/' folder (or its subfolders)
+# unless you are specifically managing large assets via Git LFS or other external methods.
+# .uasset and .umap files are your actual game assets and maps, and should be version controlled.
+# If you use Git LFS, you would add rules to .gitattributes for these file types, e.g.:
+# *.uasset filter=lfs diff=lfs merge=lfs -text
+# *.umap filter=lfs diff=lfs merge=lfs -text
