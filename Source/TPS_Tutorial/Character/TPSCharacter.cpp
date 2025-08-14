@@ -2,8 +2,8 @@
 
 
 #include "TPSCharacter.h"
-#include "TPS_Tutorial/TPSPlayerController.h"
 #include "EnhancedInputSubsystems.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 // Sets default values
@@ -18,17 +18,6 @@ ATPSCharacter::ATPSCharacter()
 void ATPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ATPSPlayerController* playerController = Cast< ATPSPlayerController >( GetController() );
-	// if ( !playerController ) return;
-	//
-	// ULocalPlayer* localPlayer = playerController->GetLocalPlayer();
-	// if ( !localPlayer ) return;
-	//
-	// UEnhancedInputLocalPlayerSubsystem* subsystem = ULocalPlayer::GetSubsystem< UEnhancedInputLocalPlayerSubsystem >( localPlayer );
-	// if ( !subsystem ) return;
-	//
-	// subsystem->AddMappingContext(  )
 
 	TArray< UChildActorComponent* > childActorComponents;
 	GetComponents( UChildActorComponent::StaticClass(), childActorComponents );
@@ -87,9 +76,11 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 void ATPSCharacter::Move( const FInputActionValue& Value )
 {
 	if ( Value.GetValueType() != EInputActionValueType::Axis2D ) return;
-	
-	AddMovementInput( GetActorRightVector(),   Value.Get< FVector2D >().X );
-	AddMovementInput( GetActorForwardVector(), Value.Get< FVector2D >().Y );
+
+	FRotator rotator = GetControlRotation();
+	// TODO : 아래 계산 공식에서 Roll 이 RightVector 뽑는 데 필요한가? wasd 모두 yaw 만 필요하지 않나 싶은데..
+	AddMovementInput( UKismetMathLibrary::GetRightVector( FRotator( rotator.Pitch, rotator.Yaw, 0.0f ) ), Value.Get< FVector2D >().X );
+	AddMovementInput( UKismetMathLibrary::GetForwardVector( FRotator( 0.0f, rotator.Yaw, 0.0f ) ), Value.Get< FVector2D >().Y );
 }
 
 // 시점을 이동한다.
@@ -97,7 +88,9 @@ void ATPSCharacter::LookAround( const FInputActionValue& Value )
 {
 	if ( Value.GetValueType() != EInputActionValueType::Axis2D ) return;
 
-	AddControllerYawInput  ( Value.Get< FVector2D >().X );
+	Pitch = FMath::Clamp( Pitch + Value.Get< FVector2D >().Y, -30.0f, 30.0f );
+
+	AddControllerYawInput( Value.Get< FVector2D >().X );
 	AddControllerPitchInput( Value.Get< FVector2D >().Y );
 }
 

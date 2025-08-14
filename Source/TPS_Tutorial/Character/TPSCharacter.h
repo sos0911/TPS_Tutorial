@@ -22,6 +22,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> MoveAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	float Pitch = 0.0f;  // pitch 회전값
+
 private:
 	const FString TPSCameraCompName     = TEXT( "TPSCamera"     );
 	const FString TPSZoomCameraCompName = TEXT( "TPSZoomCamera" );
