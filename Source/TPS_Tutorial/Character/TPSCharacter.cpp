@@ -63,6 +63,14 @@ void ATPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if ( IsLeaning )
+	{
+		if ( !FMath::IsNearlyEqual( Roll, TargetRollValue ) ) Roll = FMath::FInterpTo( Roll, TargetRollValue, GetWorld()->GetDeltaSeconds(), 5.0f );
+	}
+	else 
+	{
+		if ( !FMath::IsNearlyEqual( Roll, 0.0f ) ) Roll = FMath::FInterpTo( Roll, 0.0f, GetWorld()->GetDeltaSeconds(), 5.0f );
+	}
 }
 
 // Called to bind functionality to input
@@ -92,6 +100,15 @@ void ATPSCharacter::LookAround( const FInputActionValue& Value )
 
 	AddControllerYawInput( Value.Get< FVector2D >().X );
 	AddControllerPitchInput( Value.Get< FVector2D >().Y );
+}
+
+// 상체를 기울인다.
+void ATPSCharacter::Lean(const FInputActionValue& Value)
+{
+	if ( Value.GetValueType() != EInputActionValueType::Axis1D ) return;
+
+	IsLeaning = !IsLeaning;
+	TargetRollValue = FMath::GetMappedRangeValueClamped( FVector2f( -1.0f, 1.0f ), FVector2f( -10.0f, 10.0f ), Value.Get< float >() );
 }
 
 // 카메라 시점을 변경한다.

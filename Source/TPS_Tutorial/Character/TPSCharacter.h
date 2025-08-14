@@ -22,8 +22,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> MoveAction;
 
+	// pitch 회전값
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	float Pitch = 0.0f;  // pitch 회전값
+	float Pitch = 0.0f;  
+
+	// Roll 값
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	float Roll = 0.0f;
 
 private:
 	const FString TPSCameraCompName     = TEXT( "TPSCamera"     );
@@ -36,7 +41,10 @@ private:
 	USkeletalMeshComponent* FaceComp		  = nullptr;
 
 	bool IsTPSMode  = true;  // TPS 모드인가 여부
-	bool IsZoomMode = false; // zoom 모드인가 여부 
+	bool IsZoomMode = false; // zoom 모드인가 여부
+	bool IsLeaning  = false; // 기울이고 있는가 여부
+
+	float TargetRollValue = 0.0f; // 목표 기울이기 값
 
 public:
 	// Sets default values for this character's properties
@@ -61,6 +69,10 @@ protected:
 	// 시점을 이동한다.
 	UFUNCTION( BlueprintCallable, Category = "Character Control" )
 	void LookAround( const FInputActionValue& Value );
+
+	// 상체를 기울인다.
+	UFUNCTION( BlueprintCallable, Category = "Character Control" )
+	void Lean( const FInputActionValue& Value );
 
 	// 카메라 시점을 변경한다.
 	UFUNCTION( BlueprintCallable, Category = "Camera Control" )
