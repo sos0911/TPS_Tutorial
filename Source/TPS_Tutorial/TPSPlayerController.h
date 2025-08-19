@@ -9,9 +9,14 @@
 #include "TPSPlayerController.generated.h"
 
 
+class ATPSPlayerCameraManager;
+
+
 UCLASS()
 class TPS_TUTORIAL_API ATPSPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-	
+
+public:
+	ATPSPlayerController();
 };

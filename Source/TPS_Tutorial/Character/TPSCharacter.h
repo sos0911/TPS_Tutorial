@@ -54,12 +54,17 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void Tick(float DeltaTime ) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent( class UInputComponent* PlayerInputComponent ) override;
+
+public:
+	// 현재 Lean Roll 값을 반환한다.
+	UFUNCTION( BlueprintPure, Category = "Camera Control" )
+	float GetLeanRoll() const { return Roll; }
 
 protected:
 	// 이동한다.

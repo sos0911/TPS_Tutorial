@@ -10,15 +10,15 @@ DEFINE_LOG_CATEGORY(LogGameplay);
 // 콘솔 명령 구현: tps.DumpStack
 static void TPS_DumpStackCmd()
 {
-	UE_LOG(LogGameplay, Log, TEXT("[TPS] Dumping current call stack to log..."));
+	UE_LOG(LogGameplay, Log, TEXT("[TPS] 현재 콜스택을 로그로 덤프합니다..."));
 
-	// StackWalk into a buffer and emit through LogGameplay so category filters don't hide frames.
+	// StackWalk으로 버퍼에 담은 뒤 LogGameplay 카테고리로 출력하여 필터에 의해 프레임이 숨지지 않도록 한다.
 	const SIZE_T StackTraceSize = 65535;
 	ANSICHAR* StackTrace = (ANSICHAR*)FMemory::SystemMalloc( StackTraceSize );
 	if ( StackTrace )
 	{
 		StackTrace[ 0 ] = 0;
-		// Ignore this function (TPS_DumpStackCmd) and the caller wrapper to show user frames first.
+		// 이 함수(TPS_DumpStackCmd)와 호출 래퍼 프레임을 건너뛰어 사용자 코드 프레임부터 보이게 한다.
 		const int32 NumFramesToIgnore = 2;
 		FPlatformStackWalk::StackWalkAndDumpEx(
 			StackTrace,
@@ -27,19 +27,19 @@ static void TPS_DumpStackCmd()
 			FGenericPlatformStackWalk::EStackWalkFlags::AccurateStackWalk,
 			nullptr );
 
-		// Log the entire stack as one block under our category so both engine and game frames are visible.
+		// 전체 스택을 한 번에 우리 카테고리로 출력하여 엔진/게임 프레임이 모두 보이도록 한다.
 		UE_LOG( LogGameplay, Log, TEXT( "%s" ), ANSI_TO_TCHAR( StackTrace ) );
 		FMemory::SystemFree( StackTrace );
 	}
 	else
 	{
-		UE_LOG( LogGameplay, Warning, TEXT("[TPS] Failed to allocate buffer for stack trace." ) );
+		UE_LOG( LogGameplay, Warning, TEXT("[TPS] 스택 트레이스 버퍼 할당에 실패했습니다." ) );
 	}
 }
 
 static FAutoConsoleCommand GDumpStackCmd(
 	TEXT( "tps.DumpStack" ),
-	TEXT( "Dump current call stack to the log (full stack, includes engine frames)." ),
+	TEXT( "현재 콜스택을 로그로 덤프합니다(엔진 프레임 포함, 전체 스택)." ),
 	FConsoleCommandDelegate::CreateStatic( &TPS_DumpStackCmd )
 );
 

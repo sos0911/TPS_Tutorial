@@ -2,4 +2,11 @@
 
 
 #include "TPSPlayerController.h"
+#include "TPSPlayerCameraManager.h"
+
+
+ATPSPlayerController::ATPSPlayerController()
+{
+	PlayerCameraManagerClass = ATPSPlayerCameraManager::StaticClass();
+}
 
