@@ -65,11 +65,11 @@ void ATPSCharacter::Tick(float DeltaTime)
 
 	if ( IsLeaning )
 	{
-		if ( !FMath::IsNearlyEqual( Roll, TargetRollValue ) ) Roll = FMath::FInterpTo( Roll, TargetRollValue, GetWorld()->GetDeltaSeconds(), 5.0f );
+		if ( !FMath::IsNearlyEqual( Roll, TargetRollValue ) ) Roll = FMath::FInterpTo( Roll, TargetRollValue, DeltaTime, 5.0f );
 	}
 	else 
 	{
-		if ( !FMath::IsNearlyEqual( Roll, 0.0f ) ) Roll = FMath::FInterpTo( Roll, 0.0f, GetWorld()->GetDeltaSeconds(), 5.0f );
+		if ( !FMath::IsNearlyEqual( Roll, 0.0f ) ) Roll = FMath::FInterpTo( Roll, 0.0f, DeltaTime, 5.0f );
 	}
 }
 
@@ -107,8 +107,10 @@ void ATPSCharacter::Lean(const FInputActionValue& Value)
 {
 	if ( Value.GetValueType() != EInputActionValueType::Axis1D ) return;
 
-	IsLeaning = !IsLeaning;
-	TargetRollValue = FMath::GetMappedRangeValueClamped( FVector2f( -1.0f, 1.0f ), FVector2f( -10.0f, 10.0f ), Value.Get< float >() );
+	const float axisValue = Value.Get< float >();
+	IsLeaning = FMath::Abs( axisValue ) > KINDA_SMALL_NUMBER;
+	
+	TargetRollValue = FMath::GetMappedRangeValueClamped( FVector2f( -1.0f, 1.0f ), FVector2f( -10.0f, 10.0f ), axisValue );
 }
 
 // 카메라 시점을 변경한다.
