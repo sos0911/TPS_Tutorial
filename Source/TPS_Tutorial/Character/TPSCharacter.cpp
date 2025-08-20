@@ -4,6 +4,7 @@
 #include "TPSCharacter.h"
 #include "EnhancedInputSubsystems.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "TPS_Tutorial/TPSLog.h"
 
 
 // Sets default values
@@ -96,10 +97,31 @@ void ATPSCharacter::LookAround( const FInputActionValue& Value )
 {
 	if ( Value.GetValueType() != EInputActionValueType::Axis2D ) return;
 
-	Pitch = FMath::Clamp( Pitch + Value.Get< FVector2D >().Y, -30.0f, 30.0f );
+	// NOTE : 회전값 정규화 형식이 컨트롤러 피치값에서 다르게 이루어져 이 방식은 주석 처리한다.
+	// APlayerController* playerController = Cast< APlayerController >( GetController() );
+	// if ( !playerController ) return;
+	//
+	// FRotator ctrlRot = playerController->GetControlRotation();
+	//
+	// // UE_LOG( LogGameplay, Log, TEXT( "mouse input Y : [ %f ], bef pitch : [ %f ]" ), Value.Get< FVector2D >().Y, Pitch );
+	//
+	// const float desiredPitch = FMath::Clamp( ctrlRot.Pitch + Value.Get< FVector2D >().Y, -60.0f, 60.0f );
+	// const float deltaPitch   = FMath::FindDeltaAngleDegrees( ctrlRot.Pitch, desiredPitch );
+	//
+	// UE_LOG( LogGameplay, Log, TEXT( "ctrlRot.Pitch : [ %f ],  mouse input Y : [ %f ], desiredPitch : [ %f ], deltaPitch : [ %f ]" ), ctrlRot.Pitch, Value.Get< FVector2D >().Y, desiredPitch, deltaPitch );
+	//
+	// AddControllerYawInput( Value.Get< FVector2D >().X );
+	// AddControllerPitchInput( deltaPitch );
+	//
+	// Pitch = desiredPitch;
+
+	const float befPitch = Pitch;
+	const float afPitch  = FMath::Clamp( Pitch + Value.Get< FVector2D >().Y, -30.0f, 30.0f );
 
 	AddControllerYawInput( Value.Get< FVector2D >().X );
-	AddControllerPitchInput( Value.Get< FVector2D >().Y );
+	AddControllerPitchInput( afPitch - befPitch );
+
+	Pitch = afPitch;
 }
 
 // 상체를 기울인다.
