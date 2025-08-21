@@ -116,10 +116,12 @@ void ATPSCharacter::LookAround( const FInputActionValue& Value )
 	// Pitch = desiredPitch;
 
 	const float befPitch = Pitch;
-	const float afPitch  = FMath::Clamp( Pitch + Value.Get< FVector2D >().Y, -30.0f, 30.0f );
+	const float afPitch  = FMath::Clamp( Pitch + Value.Get< FVector2D >().Y, -25.0f, 25.0f );
 
 	AddControllerYawInput( Value.Get< FVector2D >().X );
 	AddControllerPitchInput( afPitch - befPitch );
+
+	UE_LOG( LogGameplay, Log, TEXT( "mouse input Y : [ %f ], afPitch : [ %f ], befPitch : [ %f ]" ), Value.Get< FVector2D >().Y, afPitch, befPitch );
 
 	Pitch = afPitch;
 }
@@ -148,7 +150,7 @@ void ATPSCharacter::ToggleCameraMode( const FInputActionValue& Value )
 	IsTPSMode = !IsTPSMode;
 
 	float cameraBlendTime = 0.2f;
-	playerController->SetViewTargetWithBlend( IsTPSMode ? TPSCameraComp->GetChildActor() : FPSCameraComp->GetChildActor(), cameraBlendTime );
+	playerController->SetViewTargetWithBlend( IsTPSMode ? TPSCameraComp->GetChildActor() : FPSCameraComp->GetChildActor(), cameraBlendTime, VTBlend_Linear, 0, true );
 
 	TWeakObjectPtr< ATPSCharacter > thisPtr = this;
 	auto ftrToggleFaceCompVisibility = [ this, thisPtr ] ()
@@ -173,6 +175,7 @@ void ATPSCharacter::ToggleCameraMode( const FInputActionValue& Value )
 void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
 {
 	if ( Value.GetValueType() != EInputActionValueType::Boolean ) return;
+	if ( !IsTPSMode ) return;
 
 	APlayerController* playerController = Cast< APlayerController >( GetController() );
 	if ( !playerController ) return;
