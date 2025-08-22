@@ -3,6 +3,7 @@
 
 #include "TPSCharacter.h"
 #include "EnhancedInputSubsystems.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "TPS_Tutorial/TPSLog.h"
 
@@ -72,6 +73,8 @@ void ATPSCharacter::Tick(float DeltaTime)
 	{
 		if ( !FMath::IsNearlyEqual( Roll, 0.0f ) ) Roll = FMath::FInterpTo( Roll, 0.0f, DeltaTime, 5.0f );
 	}
+
+	if ( IsJumping && GetCharacterMovement() && !GetCharacterMovement()->IsFalling() ) IsJumping = false;
 }
 
 // Called to bind functionality to input
@@ -130,11 +133,27 @@ void ATPSCharacter::LookAround( const FInputActionValue& Value )
 void ATPSCharacter::Lean(const FInputActionValue& Value)
 {
 	if ( Value.GetValueType() != EInputActionValueType::Axis1D ) return;
+	if ( IsJumping ) return;
 
 	const float axisValue = Value.Get< float >();
 	IsLeaning = FMath::Abs( axisValue ) > KINDA_SMALL_NUMBER;
 	
 	TargetRollValue = FMath::GetMappedRangeValueClamped( FVector2f( -1.0f, 1.0f ), FVector2f( -10.0f, 10.0f ), axisValue );
+}
+
+// 점프한다.
+void ATPSCharacter::DoJump(const FInputActionValue& Value)
+{
+	if ( Value.GetValueType() != EInputActionValueType::Boolean ) return;
+	if ( !GetCharacterMovement() ) return;
+	// 공중에 있는 동안은 점프할 수 없다.
+	// if ( GetCharacterMovement()->IsFalling() ) return;
+	if ( IsJumping ) return;
+
+	const float value = Value.Get< bool >();
+	Jump();
+
+	IsJumping = true;
 }
 
 // 카메라 시점을 변경한다.
@@ -148,7 +167,7 @@ void ATPSCharacter::ToggleCameraMode( const FInputActionValue& Value )
 	if ( !TPSCameraComp || !TPSZoomCameraComp || !FPSCameraComp ) return;
 
 	IsTPSMode = !IsTPSMode;
-
+	
 	float cameraBlendTime = 0.2f;
 	playerController->SetViewTargetWithBlend( IsTPSMode ? TPSCameraComp->GetChildActor() : FPSCameraComp->GetChildActor(), cameraBlendTime, VTBlend_Linear, 0, true );
 

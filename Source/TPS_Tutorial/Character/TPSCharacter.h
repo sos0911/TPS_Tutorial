@@ -43,6 +43,7 @@ private:
 	bool IsTPSMode  = true;  // TPS 모드인가 여부
 	bool IsZoomMode = false; // zoom 모드인가 여부
 	bool IsLeaning  = false; // 기울이고 있는가 여부
+	bool IsJumping  = false; // 점프하고 있는가 여부
 
 	float TargetRollValue = 0.0f; // 목표 기울이기 값
 
@@ -78,6 +79,10 @@ protected:
 	// 상체를 기울인다.
 	UFUNCTION( BlueprintCallable, Category = "Character Control" )
 	void Lean( const FInputActionValue& Value );
+
+	// 점프한다.
+	UFUNCTION( BlueprintCallable, Category = "Character Control" )
+	void DoJump( const FInputActionValue& Value );
 
 	// 카메라 시점을 변경한다.
 	UFUNCTION( BlueprintCallable, Category = "Camera Control" )
