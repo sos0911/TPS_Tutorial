@@ -5,7 +5,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "TPS_Tutorial/TPSLog.h"
+#include "Log/TPSLog.h"
+#include "InputActionValue.h"
 
 
 // Sets default values

@@ -10,6 +10,9 @@
 
 
 class UInputAction;
+class UChildActorComponent;
+class USkeletalMeshComponent;
+struct FInputActionValue;
 
 
 UCLASS()
