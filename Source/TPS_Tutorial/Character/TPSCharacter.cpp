@@ -7,6 +7,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Log/TPSLog.h"
 #include "InputActionValue.h"
+#include "Components/CapsuleComponent.h"
+#include "Logic/UTPSInteractionActorInterface.h"
 
 
 // Sets default values
@@ -14,7 +16,6 @@ ATPSCharacter::ATPSCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
 // Called when the game starts or when spawned
@@ -59,6 +60,11 @@ void ATPSCharacter::BeginPlay()
 
 	IsTPSMode  = true;
 	IsZoomMode = false;
+
+	if ( UCapsuleComponent* capsuleComp = GetCapsuleComponent() )
+	{
+		capsuleComp->OnComponentBeginOverlap.AddDynamic( this, &ATPSCharacter::OnBeginOverlap );
+	}
 }
 
 // Called every frame
@@ -83,6 +89,15 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+// 오버랩이 시작되었음을 알리는 이벤트를 처리한다.
+void ATPSCharacter::OnBeginOverlap( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult )
+{
+	ITPSPickUpInteractionActorInterface* interactionPickUpActorInterface = Cast< ITPSPickUpInteractionActorInterface >( OtherActor );
+	if ( !interactionPickUpActorInterface ) return;
+
+	interactionPickUpActorInterface->HandlePickUpWeaponInteract();
 }
 
 // 이동한다.
@@ -155,6 +170,14 @@ void ATPSCharacter::DoJump(const FInputActionValue& Value)
 	Jump();
 
 	IsJumping = true;
+}
+
+// 무기를 드랍한다.
+void ATPSCharacter::Drop(const FInputActionValue& Value)
+{
+	if ( Value.GetValueType() != EInputActionValueType::Boolean ) return;
+
+	
 }
 
 // 카메라 시점을 변경한다.

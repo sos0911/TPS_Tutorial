@@ -65,6 +65,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent( class UInputComponent* PlayerInputComponent ) override;
 
+	// 오버랩이 시작되었음을 알리는 이벤트를 처리한다.
+	UFUNCTION()
+	void OnBeginOverlap( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult );
+
 public:
 	// 현재 Lean Roll 값을 반환한다.
 	UFUNCTION( BlueprintPure, Category = "Camera Control" )
@@ -86,6 +90,10 @@ protected:
 	// 점프한다.
 	UFUNCTION( BlueprintCallable, Category = "Character Control" )
 	void DoJump( const FInputActionValue& Value );
+
+	// 무기를 드랍한다.
+	UFUNCTION( BlueprintCallable, Category = "Character Control" )
+	void Drop( const FInputActionValue& Value );
 
 	// 카메라 시점을 변경한다.
 	UFUNCTION( BlueprintCallable, Category = "Camera Control" )
