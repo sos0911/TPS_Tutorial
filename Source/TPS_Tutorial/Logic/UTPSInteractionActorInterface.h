@@ -12,9 +12,9 @@ class UTPSInteractionActorInterface : public UInterface
 {
 	GENERATED_BODY()
 
-public:
-	// 상호작용한다.
-	virtual void Interact() = 0;
+// public:
+// 	// 상호작용한다.
+// 	virtual void Interact() = 0;
 };
 
 UINTERFACE( MinimalAPI )
@@ -22,9 +22,9 @@ class UTPSPickUpInteractionActorInterface : public UTPSInteractionActorInterface
 {
 	GENERATED_BODY()
 
-public:
-	// 무기를 줍는 상호작용을 실행한다.
-	virtual void HandlePickUpWeaponInteract() = 0;
+// public:
+// 	// 무기를 줍는 상호작용을 실행한다.
+// 	virtual void HandlePickUpWeaponInteract() = 0;
 };
 
 class ITPSInteractionActorInterface
@@ -43,4 +43,7 @@ class ITPSPickUpInteractionActorInterface : public ITPSInteractionActorInterface
 public:
 	// 무기를 줍는 상호작용을 실행한다.
 	virtual void HandlePickUpWeaponInteract() = 0;
+
+	// 상호작용한다.
+	virtual void Interact() override;
 };

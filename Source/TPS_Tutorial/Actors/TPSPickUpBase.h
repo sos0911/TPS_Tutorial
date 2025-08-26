@@ -2,8 +2,8 @@
 
 
 #include "CoreMinimal.h"
-#include "../../../Intermediate/ProjectFiles/Source/TPS_Tutorial/UTPSInteractionActorInterface.h"
 #include "GameFramework/Actor.h"
+#include "Logic/UTPSInteractionActorInterface.h"
 #include "TPSPickUpBase.generated.h"
 
 
