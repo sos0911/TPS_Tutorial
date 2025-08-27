@@ -6,6 +6,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Logic/ITPSInteractionActorInterface.h"
+#include "Logic/Common/TPSTypes.h"
 #include "TPSCharacter.generated.h"
 
 
@@ -16,7 +18,7 @@ struct FInputActionValue;
 
 
 UCLASS()
-class TPS_TUTORIAL_API ATPSCharacter : public ACharacter
+class TPS_TUTORIAL_API ATPSCharacter : public ACharacter, public ITPSPickUpInteractionActorInterface
 {
 	GENERATED_BODY()
 
@@ -34,14 +36,16 @@ protected:
 	float Roll = 0.0f;
 
 private:
-	const FString TPSCameraCompName     = TEXT( "TPSCamera"     );
-	const FString TPSZoomCameraCompName = TEXT( "TPSZoomCamera" );
-	const FString FPSCameraCompName     = TEXT( "FPSCamera"     );
+	const FString TPSCameraCompName     = TEXT( "TPSCamera"     ); // TPS 카메라 컴포넌트 이름
+	const FString TPSZoomCameraCompName = TEXT( "TPSZoomCamera" ); // TPS 줌 카메라 컴포넌트 이름
+	const FString FPSCameraCompName     = TEXT( "FPSCamera"     ); // FPS 카메라 컴포넌트 이름
 
-	UChildActorComponent*   TPSCameraComp     = nullptr;
-	UChildActorComponent*   TPSZoomCameraComp = nullptr;
-	UChildActorComponent*   FPSCameraComp     = nullptr;
-	USkeletalMeshComponent* FaceComp		  = nullptr;
+	UChildActorComponent*   TPSCameraComp     = nullptr; // TPS 카메라 컴포넌트 객체
+	UChildActorComponent*   TPSZoomCameraComp = nullptr; // TPS 줌 카메라 컴포넌트 객체
+	UChildActorComponent*   FPSCameraComp     = nullptr; // FPS 카메라 컴포넌트 객체
+	USkeletalMeshComponent* FaceComp		  = nullptr; // 얼굴 컴포넌트 객체
+	USkeletalMeshComponent* BodyComp		  = nullptr; // 몸통 컴포넌트 객체
+	TPSActorPtr				CurrentWeapon	  = nullptr; // 현재 장착중인 무기 객체
 
 	bool IsTPSMode  = true;  // TPS 모드인가 여부
 	bool IsZoomMode = false; // zoom 모드인가 여부
@@ -49,25 +53,6 @@ private:
 	bool IsJumping  = false; // 점프하고 있는가 여부
 
 	float TargetRollValue = 0.0f; // 목표 기울이기 값
-
-public:
-	// Sets default values for this character's properties
-	ATPSCharacter();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime ) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent( class UInputComponent* PlayerInputComponent ) override;
-
-	// 오버랩이 시작되었음을 알리는 이벤트를 처리한다.
-	UFUNCTION()
-	void OnBeginOverlap( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult );
 
 public:
 	// 현재 Lean Roll 값을 반환한다.
@@ -102,4 +87,25 @@ protected:
 	// 줌 시점을 변경한다.
 	UFUNCTION( BlueprintCallable, Category = "Camera Control" )
 	void ToggleZoomMode( const FInputActionValue& Value );
+
+public:
+	// Sets default values for this character's properties
+	ATPSCharacter();
+
+	// Called every frame
+	virtual void Tick(float DeltaTime ) override;
+
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent( class UInputComponent* PlayerInputComponent ) override;
+
+	// 오버랩이 시작되었음을 알리는 이벤트를 처리한다.
+	UFUNCTION()
+	void OnBeginOverlap( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult );
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	// 무기를 줍는 상호작용을 실행한다.
+	virtual void HandlePickUpWeaponInteract( AActor* OtherActor ) override;
 };

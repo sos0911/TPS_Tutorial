@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Logic/UTPSInteractionActorInterface.h"
+#include "Logic/ITPSInteractionActorInterface.h"
 #include "TPSPickUpBase.generated.h"
 
 
@@ -21,7 +21,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	// 무기를 줍는 상호작용을 실행한다.
-	virtual void HandlePickUpWeaponInteract() override;
+	virtual void HandlePickUpWeaponInteract( AActor* OtherActor ) override;
 
 public:
 	// Called every frame

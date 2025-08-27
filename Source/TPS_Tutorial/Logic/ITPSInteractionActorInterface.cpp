@@ -1,4 +1,4 @@
-#include "UTPSInteractionActorInterface.h"
+#include "ITPSInteractionActorInterface.h"
 
 
 // 상호작용한다.

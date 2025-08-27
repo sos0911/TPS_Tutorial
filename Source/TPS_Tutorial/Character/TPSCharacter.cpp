@@ -7,8 +7,12 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Log/TPSLog.h"
 #include "InputActionValue.h"
+#include "Actors/TPSPickUpBase.h"
+#include "Actors/Components/TPSDataComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Logic/UTPSInteractionActorInterface.h"
+#include "Consts/TPSConsts.h"
+#include "Logic/ITPSInteractionActorInterface.h"
+#include "Util/TPSUtil.h"
 
 
 // Sets default values
@@ -54,7 +58,10 @@ void ATPSCharacter::BeginPlay()
 		if ( meshComponent->GetName().Equals( "Face" ) )
 		{
 			FaceComp = meshComponent;
-			break;
+		}
+		else if ( meshComponent->GetName().Equals( "Body" ) )
+		{
+			BodyComp = meshComponent;
 		}
 	}
 
@@ -65,6 +72,52 @@ void ATPSCharacter::BeginPlay()
 	{
 		capsuleComp->OnComponentBeginOverlap.AddDynamic( this, &ATPSCharacter::OnBeginOverlap );
 	}
+}
+
+// 무기를 줍는 상호작용을 실행한다.
+void ATPSCharacter::HandlePickUpWeaponInteract( AActor* OtherActor )
+{
+	// 무기를 이미 장착 중이라면 추가로 주울 수 없다.
+	if ( CurrentWeapon.IsValid() ) return;
+
+	ATPSPickUpBase* pickUpActor = Cast< ATPSPickUpBase >( OtherActor );
+	if ( !pickUpActor ) return;
+
+	UTPSDataComponent* dataComponent = TPSUtil::GetValueForObjProp< UTPSDataComponent >( pickUpActor );
+	if ( !dataComponent ) return;
+
+	const FWeaponData* weaponData = dataComponent->GetData< FWeaponData >();
+	if ( !weaponData ) return;
+
+	if ( !BodyComp ) return;
+
+	FName socketName = TEXT( "" );
+
+	switch ( weaponData->WeaponType )
+	{
+	case EWeaponType::Pistol:
+		{
+			socketName = TEXT( "Pistol" );
+		}
+		break;
+	}
+
+	if ( !BodyComp->DoesSocketExist( socketName ) ) return;
+
+	FActorSpawnParameters spawnParams;
+	spawnParams.Owner                          = this;
+	spawnParams.Instigator                     = GetInstigator();
+	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	
+	AActor* weapon = GetWorld()->SpawnActor< AActor >( weaponData->EquipWeapon, FTransform::Identity, spawnParams );
+	if ( !weapon ) return;
+
+	FAttachmentTransformRules attachmentRules( EAttachmentRule::SnapToTarget, true );
+	weapon->AttachToComponent( BodyComp, attachmentRules, socketName );
+
+	CurrentWeapon = weapon;
+
+	// 픽업 액터 정리는 픽업 액터 쪽에서 할 예정.
 }
 
 // Called every frame
@@ -97,7 +150,9 @@ void ATPSCharacter::OnBeginOverlap( UPrimitiveComponent* OverlappedComponent, AA
 	ITPSPickUpInteractionActorInterface* interactionPickUpActorInterface = Cast< ITPSPickUpInteractionActorInterface >( OtherActor );
 	if ( !interactionPickUpActorInterface ) return;
 
-	interactionPickUpActorInterface->HandlePickUpWeaponInteract();
+	// 무기 쪽 처리는 저쪽에서 하게 해야 하나?
+	interactionPickUpActorInterface->HandlePickUpWeaponInteract( this );
+	HandlePickUpWeaponInteract( OtherActor );
 }
 
 // 이동한다.

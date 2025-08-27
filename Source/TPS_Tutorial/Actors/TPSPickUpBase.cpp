@@ -19,7 +19,7 @@ void ATPSPickUpBase::BeginPlay()
 }
 
 // 무기를 줍는 상호작용을 실행한다.
-void ATPSPickUpBase::HandlePickUpWeaponInteract()
+void ATPSPickUpBase::HandlePickUpWeaponInteract( AActor* OtherActor )
 {
 	// TODO : 액터 디스폰 처리 및 정리
 }
