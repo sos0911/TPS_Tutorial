@@ -107,5 +107,5 @@ protected:
 	virtual void BeginPlay() override;
 
 	// 무기를 줍는 상호작용을 실행한다.
-	virtual void HandlePickUpWeaponInteract( AActor* OtherActor ) override;
+	virtual bool HandlePickUpWeaponInteract( AActor* OtherActor ) override;
 };

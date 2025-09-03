@@ -75,21 +75,21 @@ void ATPSCharacter::BeginPlay()
 }
 
 // 무기를 줍는 상호작용을 실행한다.
-void ATPSCharacter::HandlePickUpWeaponInteract( AActor* OtherActor )
+bool ATPSCharacter::HandlePickUpWeaponInteract( AActor* OtherActor )
 {
 	// 무기를 이미 장착 중이라면 추가로 주울 수 없다.
-	if ( CurrentWeapon.IsValid() ) return;
+	if ( CurrentWeapon.IsValid() ) return false;
 
 	ATPSPickUpBase* pickUpActor = Cast< ATPSPickUpBase >( OtherActor );
-	if ( !pickUpActor ) return;
+	if ( !pickUpActor ) return false;
 
 	UTPSDataComponent* dataComponent = TPSUtil::GetValueForObjProp< UTPSDataComponent >( pickUpActor );
-	if ( !dataComponent ) return;
+	if ( !dataComponent ) return false;
 
 	const FWeaponData* weaponData = dataComponent->GetData< FWeaponData >();
-	if ( !weaponData ) return;
+	if ( !weaponData ) return false;
 
-	if ( !BodyComp ) return;
+	if ( !BodyComp ) return false;
 
 	FName socketName = TEXT( "" );
 
@@ -100,9 +100,39 @@ void ATPSCharacter::HandlePickUpWeaponInteract( AActor* OtherActor )
 			socketName = TEXT( "Pistol" );
 		}
 		break;
+	case EWeaponType::AssaultRifle:
+		{
+			socketName = TEXT( "AssaultRifle" );
+		}
+		break;
+	case EWeaponType::SniperRifle:
+		{
+			socketName = TEXT( "SniperRifle" );
+		}
+		break;
+	case EWeaponType::RocketLauncher:
+		{
+			socketName = TEXT( "RocketLauncher" );
+		}
+		break;
+	case EWeaponType::GrenadeLauncher:
+		{
+			socketName = TEXT( "GrenadeLauncher" );
+		}
+		break;
+	case EWeaponType::Shotgun:
+		{
+			socketName = TEXT( "Shotgun" );
+		}
+		break;
+	case EWeaponType::Knife:
+		{
+			socketName = TEXT( "Knife" );
+		}
+		break;
 	}
 
-	if ( !BodyComp->DoesSocketExist( socketName ) ) return;
+	if ( !BodyComp->DoesSocketExist( socketName ) ) return false;
 
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner                          = this;
@@ -110,14 +140,14 @@ void ATPSCharacter::HandlePickUpWeaponInteract( AActor* OtherActor )
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	
 	AActor* weapon = GetWorld()->SpawnActor< AActor >( weaponData->EquipWeapon, FTransform::Identity, spawnParams );
-	if ( !weapon ) return;
+	if ( !weapon ) return false;
 
 	FAttachmentTransformRules attachmentRules( EAttachmentRule::SnapToTarget, true );
 	weapon->AttachToComponent( BodyComp, attachmentRules, socketName );
 
 	CurrentWeapon = weapon;
 
-	// 픽업 액터 정리는 픽업 액터 쪽에서 할 예정.
+	return true;
 }
 
 // Called every frame
@@ -150,9 +180,7 @@ void ATPSCharacter::OnBeginOverlap( UPrimitiveComponent* OverlappedComponent, AA
 	ITPSPickUpInteractionActorInterface* interactionPickUpActorInterface = Cast< ITPSPickUpInteractionActorInterface >( OtherActor );
 	if ( !interactionPickUpActorInterface ) return;
 
-	// 무기 쪽 처리는 저쪽에서 하게 해야 하나?
-	interactionPickUpActorInterface->HandlePickUpWeaponInteract( this );
-	HandlePickUpWeaponInteract( OtherActor );
+	if ( HandlePickUpWeaponInteract( OtherActor ) ) interactionPickUpActorInterface->HandlePickUpWeaponInteract( this );
 }
 
 // 이동한다.
