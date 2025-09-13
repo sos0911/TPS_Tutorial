@@ -229,7 +229,7 @@ void ATPSCharacter::LookAround( const FInputActionValue& Value )
 }
 
 // 상체를 기울인다.
-void ATPSCharacter::Lean(const FInputActionValue& Value)
+void ATPSCharacter::Lean( const FInputActionValue& Value )
 {
 	if ( Value.GetValueType() != EInputActionValueType::Axis1D ) return;
 	if ( IsJumping ) return;
@@ -241,7 +241,7 @@ void ATPSCharacter::Lean(const FInputActionValue& Value)
 }
 
 // 점프한다.
-void ATPSCharacter::DoJump(const FInputActionValue& Value)
+void ATPSCharacter::DoJump( const FInputActionValue& Value )
 {
 	if ( Value.GetValueType() != EInputActionValueType::Boolean ) return;
 	if ( !GetCharacterMovement() ) return;
@@ -256,11 +256,29 @@ void ATPSCharacter::DoJump(const FInputActionValue& Value)
 }
 
 // 무기를 드랍한다.
-void ATPSCharacter::Drop(const FInputActionValue& Value)
+void ATPSCharacter::Drop( const FInputActionValue& Value )
 {
 	if ( Value.GetValueType() != EInputActionValueType::Boolean ) return;
+	if ( !CurrentWeapon.IsValid() ) return;
 
+	UTPSDataComponent* dataComponent = TPSUtil::GetValueForObjProp< UTPSDataComponent >( CurrentWeapon.Get() );
+	if ( !dataComponent ) return;
+
+	const FWeaponData* weaponData = dataComponent->GetData< FWeaponData >();
+	if ( !weaponData ) return;
+
+	const FVector  dropLocation = GetActorLocation() + GetActorForwardVector() * 200.0f;
+	const FRotator dropRotation = GetActorRotation();
+
+	FActorSpawnParameters spawnParams;
+	// spawnParams.Owner                          = nullptr;
+	// spawnParams.Instigator                     = GetInstigator();
+	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	
+	AActor* weapon = GetWorld()->SpawnActor< AActor >( weaponData->PickUpWeapon, FTransform( dropRotation, dropLocation ), spawnParams );
+
+	CurrentWeapon->Destroy();
+	CurrentWeapon = nullptr;
 }
 
 // 카메라 시점을 변경한다.
