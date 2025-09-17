@@ -5,6 +5,7 @@
 
 
 #include "CoreMinimal.h"
+#include "Consts/TPSConsts.h"
 #include "GameFramework/Character.h"
 #include "Logic/ITPSInteractionActorInterface.h"
 #include "Logic/Common/TPSTypes.h"
@@ -35,6 +36,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	float Roll = 0.0f;
 
+	// TPS 모드인가 여부
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	bool IsTPSMode = true;
+
+	// zoom 모드인가 여부
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	bool IsZoomMode = false;
+
+	// 현재 무기 타입
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
+	EWeaponType CurrentWeaponType = EWeaponType::Max;
+
 private:
 	const FString TPSCameraCompName     = TEXT( "TPSCamera"     ); // TPS 카메라 컴포넌트 이름
 	const FString TPSZoomCameraCompName = TEXT( "TPSZoomCamera" ); // TPS 줌 카메라 컴포넌트 이름
@@ -47,8 +60,6 @@ private:
 	USkeletalMeshComponent* BodyComp		  = nullptr; // 몸통 컴포넌트 객체
 	TPSActorPtr				CurrentWeapon	  = nullptr; // 현재 장착중인 무기 객체
 
-	bool IsTPSMode  = true;  // TPS 모드인가 여부
-	bool IsZoomMode = false; // zoom 모드인가 여부
 	bool IsLeaning  = false; // 기울이고 있는가 여부
 	bool IsJumping  = false; // 점프하고 있는가 여부
 

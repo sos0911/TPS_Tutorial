@@ -7,7 +7,7 @@
 
 
 UENUM( BlueprintType )
-enum class EWeaponType
+enum class EWeaponType : uint8
 {
 	Pistol,          // 권총
 	AssaultRifle,    // 돌격소총
@@ -16,6 +16,7 @@ enum class EWeaponType
 	GrenadeLauncher, // 수류탄 발사기
 	Shotgun,         // 샷건
 	Knife,           // 칼
+	Max
 };
 
 USTRUCT( BlueprintType )
@@ -25,19 +26,19 @@ struct FWeaponData : public FTableRowBase
 
 	// WeaponName
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
-	FName WeaponName;
+	FName WeaponName = TEXT( "" );
 
 	// WeaponType
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
-	EWeaponType WeaponType;
+	EWeaponType WeaponType = EWeaponType::Max;
 
 	// Damage
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
-	float Damage;
+	float Damage = 0.0f;
 
 	// MagazineSize
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
-	int32 MagazineSize;
+	int32 MagazineSize = 0;
 
 	// PickUpWeapon: BP Pick Up We 클래스를 참조 (APickUpActor의 자식 클래스)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")

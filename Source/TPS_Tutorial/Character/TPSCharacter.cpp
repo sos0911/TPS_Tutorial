@@ -11,6 +11,7 @@
 #include "Actors/Components/TPSDataComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Consts/TPSConsts.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Logic/ITPSInteractionActorInterface.h"
 #include "Util/TPSUtil.h"
 
@@ -146,6 +147,7 @@ bool ATPSCharacter::HandlePickUpWeaponInteract( AActor* OtherActor )
 	weapon->AttachToComponent( BodyComp, attachmentRules, socketName );
 
 	CurrentWeapon = weapon;
+	CurrentWeaponType = weaponData->WeaponType;
 
 	return true;
 }
@@ -279,6 +281,7 @@ void ATPSCharacter::Drop( const FInputActionValue& Value )
 
 	CurrentWeapon->Destroy();
 	CurrentWeapon = nullptr;
+	CurrentWeaponType = EWeaponType::Max;
 }
 
 // 카메라 시점을 변경한다.
@@ -319,14 +322,36 @@ void ATPSCharacter::ToggleCameraMode( const FInputActionValue& Value )
 void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
 {
 	if ( Value.GetValueType() != EInputActionValueType::Boolean ) return;
-	if ( !IsTPSMode ) return;
 
 	APlayerController* playerController = Cast< APlayerController >( GetController() );
 	if ( !playerController ) return;
+	// 1인칭인데 무기가 없는 경우에는 줌을 허용하지 않는다.
+	if ( !IsTPSMode && !CurrentWeapon.IsValid() ) return;
 
 	IsZoomMode = !IsZoomMode;
 
 	float cameraBlendTime = 0.2f;
-	playerController->SetViewTargetWithBlend( IsZoomMode ? TPSZoomCameraComp->GetChildActor() : TPSCameraComp->GetChildActor(), cameraBlendTime );
+	if ( IsTPSMode )
+	{
+		playerController->SetViewTargetWithBlend( IsZoomMode ? TPSZoomCameraComp->GetChildActor() : TPSCameraComp->GetChildActor(), cameraBlendTime );
+	}
+	else
+	{
+		if ( IsZoomMode )
+		{
+			TArray< AActor* > childActors;
+			USpringArmComponent* springArmComp = CurrentWeapon->GetComponentByClass< USpringArmComponent >( );
+			if ( !springArmComp ) return;
+
+			UChildActorComponent* childActorComp = Cast< UChildActorComponent >( springArmComp->GetChildComponent( 0 ) );
+			if ( !childActorComp ) return;
+			
+			playerController->SetViewTargetWithBlend( childActorComp->GetChildActor(), cameraBlendTime, VTBlend_Linear, 0, true);
+		}
+		else
+		{
+			playerController->SetViewTargetWithBlend( FPSCameraComp->GetChildActor(), cameraBlendTime, VTBlend_Linear, 0, true );
+		}
+	}
 }
 
