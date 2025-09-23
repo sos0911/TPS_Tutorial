@@ -2,7 +2,6 @@
 
 
 #include "TPSCharacter.h"
-#include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Log/TPSLog.h"
@@ -251,7 +250,6 @@ void ATPSCharacter::DoJump( const FInputActionValue& Value )
 	// if ( GetCharacterMovement()->IsFalling() ) return;
 	if ( IsJumping ) return;
 
-	const float value = Value.Get< bool >();
 	Jump();
 
 	IsJumping = true;
