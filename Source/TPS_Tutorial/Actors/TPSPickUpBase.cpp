@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// TPS 픽업용 무기 액터 클래스 소스 파일
 
 
 #include "TPSPickUpBase.h"

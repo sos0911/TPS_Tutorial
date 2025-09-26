@@ -353,3 +353,20 @@ void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
 	}
 }
 
+// 무기를 발사하는 상호작용을 실행한다.
+bool ATPSCharacter::HandleFireWeaponInteract()
+{
+	if ( !CurrentWeapon.IsValid() || CurrentWeaponType == EWeaponType::Max ) return false;
+	if ( IsFiring ) return false;
+	
+	IsFiring = true;
+
+	ITPSEquipInteractionActorInterface* interactionEquipActorInterface = Cast< ITPSEquipInteractionActorInterface >( CurrentWeapon );
+	if ( interactionEquipActorInterface )
+	{
+		interactionEquipActorInterface->HandleFireWeaponInteract();
+	}
+
+	return true;
+}
+

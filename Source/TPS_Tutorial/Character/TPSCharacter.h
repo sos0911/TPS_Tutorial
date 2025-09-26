@@ -19,7 +19,7 @@ struct FInputActionValue;
 
 
 UCLASS()
-class TPS_TUTORIAL_API ATPSCharacter : public ACharacter, public ITPSPickUpInteractionActorInterface
+class TPS_TUTORIAL_API ATPSCharacter : public ACharacter, public ITPSPickUpInteractionActorInterface, public ITPSEquipInteractionActorInterface
 {
 	GENERATED_BODY()
 
@@ -47,6 +47,10 @@ protected:
 	// 현재 무기 타입
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
 	EWeaponType CurrentWeaponType = EWeaponType::Max;
+
+	// 현재 무기 발사 중인가 여부
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	bool IsFiring = false;
 
 private:
 	const FString TPSCameraCompName     = TEXT( "TPSCamera"     ); // TPS 카메라 컴포넌트 이름
@@ -98,6 +102,10 @@ protected:
 	// 줌 시점을 변경한다.
 	UFUNCTION( BlueprintCallable, Category = "Camera Control" )
 	void ToggleZoomMode( const FInputActionValue& Value );
+
+	// 무기를 발사하는 상호작용을 실행한다.
+	UFUNCTION( BlueprintCallable, Category = "Interaction Control" )
+	virtual bool HandleFireWeaponInteract() override;
 
 public:
 	// Sets default values for this character's properties

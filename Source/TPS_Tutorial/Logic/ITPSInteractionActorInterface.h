@@ -18,7 +18,12 @@ UINTERFACE( MinimalAPI )
 class UTPSPickUpInteractionActorInterface : public UTPSInteractionActorInterface
 {
 	GENERATED_BODY()
-	
+};
+
+UINTERFACE( MinimalAPI )
+class UTPSEquipInteractionActorInterface : public UTPSInteractionActorInterface
+{
+	GENERATED_BODY()
 };
 
 class ITPSInteractionActorInterface
@@ -39,5 +44,17 @@ public:
 	virtual bool HandlePickUpWeaponInteract( AActor* OtherActor ) = 0;
 
 	// 상호작용한다.
-	virtual void Interact() override;
+	virtual void Interact() override {}
+};
+
+class ITPSEquipInteractionActorInterface : public ITPSInteractionActorInterface
+{
+	GENERATED_BODY()
+
+public:
+	// 무기를 발사하는 상호작용을 실행한다.
+	virtual bool HandleFireWeaponInteract() = 0;
+
+	// 상호작용한다.
+	virtual void Interact() override {}
 };
