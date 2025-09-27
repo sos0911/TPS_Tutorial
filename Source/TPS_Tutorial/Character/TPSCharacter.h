@@ -53,6 +53,14 @@ protected:
 	bool IsFiring = false;
 
 private:
+	enum class ERotationType
+	{
+		Pitch, // pitch
+		Roll,  // roll
+		Yaw    // yaw
+	};
+
+private:
 	const FString TPSCameraCompName     = TEXT( "TPSCamera"     ); // TPS 카메라 컴포넌트 이름
 	const FString TPSZoomCameraCompName = TEXT( "TPSZoomCamera" ); // TPS 줌 카메라 컴포넌트 이름
 	const FString FPSCameraCompName     = TEXT( "FPSCamera"     ); // FPS 카메라 컴포넌트 이름
@@ -107,6 +115,10 @@ protected:
 	UFUNCTION( BlueprintCallable, Category = "Interaction Control" )
 	virtual bool HandleFireWeaponInteract() override;
 
+	// 무기를 발사한다.
+	UFUNCTION( BlueprintCallable, Category = "Interaction Control" )
+	void Fire( const bool InIsFiring );
+
 public:
 	// Sets default values for this character's properties
 	ATPSCharacter();
@@ -127,4 +139,8 @@ protected:
 
 	// 무기를 줍는 상호작용을 실행한다.
 	virtual bool HandlePickUpWeaponInteract( AActor* OtherActor ) override;
+
+private:
+	// 컨트롤러 인풋을 더한다.
+	void _AddControllerInput( const ERotationType RotationType, const float Value );
 };

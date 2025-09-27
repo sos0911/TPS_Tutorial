@@ -151,6 +151,26 @@ bool ATPSCharacter::HandlePickUpWeaponInteract( AActor* OtherActor )
 	return true;
 }
 
+// 컨트롤러 인풋을 더한다.
+void ATPSCharacter::_AddControllerInput( const ERotationType RotationType, const float Value )
+{
+	switch ( RotationType )
+	{
+	case ERotationType::Pitch:
+		{
+			const float afPitch = FMath::Clamp( Pitch + Value, -25.0f, 25.0f );
+			AddControllerPitchInput( afPitch - Pitch );
+			Pitch = afPitch;
+		}
+		break;
+	case ERotationType::Yaw:
+		{
+			AddControllerYawInput( Value );
+		}
+		break;
+	}
+}
+
 // Called every frame
 void ATPSCharacter::Tick(float DeltaTime)
 {
@@ -218,15 +238,8 @@ void ATPSCharacter::LookAround( const FInputActionValue& Value )
 	//
 	// Pitch = desiredPitch;
 
-	const float befPitch = Pitch;
-	const float afPitch  = FMath::Clamp( Pitch + Value.Get< FVector2D >().Y, -25.0f, 25.0f );
-
-	AddControllerYawInput( Value.Get< FVector2D >().X );
-	AddControllerPitchInput( afPitch - befPitch );
-
-	UE_LOG( LogGameplay, Log, TEXT( "mouse input Y : [ %f ], afPitch : [ %f ], befPitch : [ %f ]" ), Value.Get< FVector2D >().Y, afPitch, befPitch );
-
-	Pitch = afPitch;
+	_AddControllerInput( ERotationType::Yaw,   Value.Get< FVector2D >().X );
+	_AddControllerInput( ERotationType::Pitch, Value.Get< FVector2D >().Y );
 }
 
 // 상체를 기울인다.
@@ -357,16 +370,63 @@ void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
 bool ATPSCharacter::HandleFireWeaponInteract()
 {
 	if ( !CurrentWeapon.IsValid() || CurrentWeaponType == EWeaponType::Max ) return false;
-	if ( IsFiring ) return false;
-	
-	IsFiring = true;
 
-	ITPSEquipInteractionActorInterface* interactionEquipActorInterface = Cast< ITPSEquipInteractionActorInterface >( CurrentWeapon );
-	if ( interactionEquipActorInterface )
+	if ( ITPSEquipInteractionActorInterface* interactionEquipActorInterface = Cast< ITPSEquipInteractionActorInterface >( CurrentWeapon ) )
 	{
 		interactionEquipActorInterface->HandleFireWeaponInteract();
 	}
 
+	FString FireMontagePath = TEXT( "/Game/CustomContents/Animations/" ); 
+
+	// NOTE : PlayMontage 구현부까지 여기로 옮길 것.
+	switch ( CurrentWeaponType )
+	{
+	case EWeaponType::Pistol:
+		{
+			FireMontagePath += TEXT( "Pistol/MT_Pistol_Fire.MT_Pistol_Fire" );
+		}
+		break;
+	}
+
+	UAnimMontage* fireMontage = LoadObject< UAnimMontage >( nullptr, *FireMontagePath );
+	if ( !fireMontage ) return false;
+
+	UAnimInstance* animInstance = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
+	if ( !animInstance ) return false;
+
+	TWeakObjectPtr< ATPSCharacter > thisPtr = this;
+	auto ftrFireOff = [ this, thisPtr ] ( UAnimMontage* Montage, bool bInterrupted )
+	{
+		if ( !thisPtr.IsValid() ) return;
+
+		IsFiring = false;	
+	};
+	
+	PlayAnimMontage( fireMontage );
+
+	if ( FOnMontageBlendingOutStarted* interruptDelegate = animInstance->Montage_GetBlendingOutDelegate( fireMontage ) )
+	{
+		interruptDelegate->BindLambda( ftrFireOff );
+	}
+	if ( FOnMontageEnded* endDelegate = animInstance->Montage_GetEndedDelegate( fireMontage ) )
+	{
+		endDelegate->BindLambda( ftrFireOff );
+	}
+
+	// NOTE : 발사 시마다 임의 반동 구현
+	_AddControllerInput( ERotationType::Yaw,   FMath::RandRange( -1, 1 ) );
+	_AddControllerInput( ERotationType::Pitch, FMath::RandRange( -3, -1 ) );
+	
 	return true;
+}
+
+// 무기를 발사한다.
+void ATPSCharacter::Fire( const bool InIsFiring )
+{
+	if ( IsFiring == InIsFiring ) return;
+
+	IsFiring = InIsFiring;
+
+	if ( IsFiring ) HandleFireWeaponInteract();
 }
 
