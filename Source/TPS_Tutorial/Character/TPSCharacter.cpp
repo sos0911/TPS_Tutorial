@@ -7,10 +7,13 @@
 #include "Log/TPSLog.h"
 #include "InputActionValue.h"
 #include "Actors/TPSPickUpBase.h"
+#include "Actors/TPSShotImpactField.h"
 #include "Actors/Components/TPSDataComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Consts/TPSConsts.h"
+#include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Logic/ITPSInteractionActorInterface.h"
 #include "Util/TPSUtil.h"
 
@@ -416,6 +419,36 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 	// NOTE : 발사 시마다 임의 반동 구현
 	_AddControllerInput( ERotationType::Yaw,   FMath::RandRange( -1, 1 ) );
 	_AddControllerInput( ERotationType::Pitch, FMath::RandRange( -3, -1 ) );
+
+	if ( USkeletalMeshComponent* weaponMeshComp = CurrentWeapon->GetComponentByClass< USkeletalMeshComponent >() )
+	{
+		if ( const USkeletalMeshSocket* muzzleSocket = weaponMeshComp->GetSocketByName( TEXT( "Muzzle" ) ) )
+		{
+			FVector rayStartLoc = muzzleSocket->GetSocketLocation( weaponMeshComp );
+			FVector rayEndLoc   = rayStartLoc + muzzleSocket->GetSocketTransform( weaponMeshComp ).GetUnitAxis( EAxis::X ) * 10000.0f;
+				
+			FHitResult hitResult;
+			TArray< TEnumAsByte< EObjectTypeQuery > > objTypes =
+			{
+				UEngineTypes::ConvertToObjectType( ECC_WorldStatic  ),
+				UEngineTypes::ConvertToObjectType( ECC_WorldDynamic ),
+				UEngineTypes::ConvertToObjectType( ECC_Destructible )
+			};
+			
+			FCollisionQueryParams queryParams;
+			queryParams.AddIgnoredActor( this );
+			
+			bool bHit = GetWorld()->LineTraceSingleByObjectType( hitResult, rayStartLoc, rayEndLoc, FCollisionObjectQueryParams( objTypes ), queryParams );
+
+			if ( bHit )
+			{
+				FActorSpawnParameters spawnParams;
+				spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				
+				ATPSShotImpactField* fieldActor = GetWorld()->SpawnActor< ATPSShotImpactField >( ATPSShotImpactField::StaticClass(), FVector( hitResult.ImpactPoint ), FRotator(), spawnParams );
+			}
+		}
+	}
 	
 	return true;
 }
