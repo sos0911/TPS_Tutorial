@@ -445,7 +445,9 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 				FActorSpawnParameters spawnParams;
 				spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				
-				ATPSShotImpactField* fieldActor = GetWorld()->SpawnActor< ATPSShotImpactField >( ATPSShotImpactField::StaticClass(), FVector( hitResult.ImpactPoint ), FRotator(), spawnParams );
+				ATPSShotImpactField* fieldActor = GetWorld()->SpawnActor< ATPSShotImpactField >(
+					LoadClass< ATPSShotImpactField >( nullptr, *ATPSShotImpactField::GetPath() ),
+					FVector( hitResult.ImpactPoint ), FRotator(), spawnParams );
 			}
 		}
 	}

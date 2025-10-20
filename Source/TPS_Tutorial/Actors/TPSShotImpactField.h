@@ -19,6 +19,10 @@ public:
 	ATPSShotImpactField();
 
 protected:
+	UFUNCTION( BlueprintImplementableEvent, Category = "Initialize" )
+	void OnBeginPlayed();
+
+protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 

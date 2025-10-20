@@ -20,8 +20,6 @@ public:
 	ATPSEquipBase();
 
 protected:
-	// 무기를 발사하는 상호작용을 실행한다.
-	// UFUNCTION( BlueprintNativeEvent, BlueprintCallable, Category = "Interaction Control" )
 	UFUNCTION( BlueprintCallable, Category = "Interaction Control" )
 	virtual bool HandleFireWeaponInteract() override;
 
