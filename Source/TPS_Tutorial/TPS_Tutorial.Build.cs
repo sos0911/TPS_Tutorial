@@ -8,7 +8,18 @@ public class TPS_Tutorial : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "FieldSystemEngine", "Chaos", "ChaosSolverEngine" });
+		PublicDependencyModuleNames.AddRange(new string[] 
+			{ 
+				"Core", 
+				"CoreUObject", 
+				"Engine", 
+				"InputCore", 
+				"EnhancedInput", 
+				"FieldSystemEngine", 
+				"Chaos", 
+				"ChaosSolverEngine",
+				"GeometryCollectionEngine"
+			});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 		

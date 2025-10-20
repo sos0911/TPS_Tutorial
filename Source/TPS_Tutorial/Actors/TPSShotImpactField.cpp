@@ -2,6 +2,8 @@
 
 
 #include "TPSShotImpactField.h"
+#include "GeometryCollection/GeometryCollectionComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -17,6 +19,34 @@ void ATPSShotImpactField::BeginPlay()
 	Super::BeginPlay();
 
 	OnBeginPlayed();
+
+	// Geometry Collection 찾아서 데미지 확인
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), FoundActors);
+	
+	for (AActor* Actor : FoundActors)
+	{
+		if (Actor->GetName().Contains(TEXT("GeometryCollection")))
+		{
+			UGeometryCollectionComponent* GeomComp = Actor->FindComponentByClass<UGeometryCollectionComponent>();
+			if (GeomComp)
+			{
+				float Distance = FVector::Distance(GetActorLocation(), Actor->GetActorLocation());
+				UE_LOG(LogTemp, Warning, TEXT("Found Vase! Distance: %.2f, Simulating: %s"), 
+					Distance, GeomComp->IsSimulatingPhysics() ? TEXT("YES") : TEXT("NO"));
+				
+				// 물리 활성화 시도
+				GeomComp->SetSimulatePhysics(true);
+				
+				// 직접 힘 가하기 테스트
+				FVector ImpulseDir = (Actor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+				GeomComp->AddImpulse(ImpulseDir * 100000.0f);
+				
+				UE_LOG(LogTemp, Warning, TEXT("Applied impulse to Vase!"));
+			}
+			break;
+		}
+	}
 }
 
 // Called every frame
