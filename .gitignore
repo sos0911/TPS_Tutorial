@@ -97,3 +97,4 @@ CrashReportClient/
 # If you use Git LFS, you would add rules to .gitattributes for these file types, e.g.:
 # *.uasset filter=lfs diff=lfs merge=lfs -text
 # *.umap filter=lfs diff=lfs merge=lfs -text
+Content/__ExternalActors__/
