@@ -52,6 +52,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	bool IsFiring = false;
 
+	// 현재 어느 방향으로 이동 중인지?
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	ECharacterMoveDirection MovingDirection = ECharacterMoveDirection::Max;
+
 private:
 	enum class ERotationType
 	{

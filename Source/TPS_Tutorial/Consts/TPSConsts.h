@@ -19,6 +19,16 @@ enum class EWeaponType : uint8
 	Max
 };
 
+UENUM( BlueprintType )
+enum class ECharacterMoveDirection : uint8
+{
+	Forward,  // 앞쪽 
+	Backward, // 뒤쪽
+	Left,     // 왼쪽
+	Right,    // 오른쪽
+	Max       
+};
+
 USTRUCT( BlueprintType )
 struct FWeaponData : public FTableRowBase
 {

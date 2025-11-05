@@ -21,7 +21,7 @@ public class TPS_Tutorial : ModuleRules
 				"GeometryCollectionEngine"
 			});
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(new string[] { "AnimGraphRuntime" });
 		
 		PublicIncludePaths.AddRange( new string[] { "./TPS_Tutorial" } );
 

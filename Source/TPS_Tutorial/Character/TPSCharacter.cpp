@@ -2,18 +2,18 @@
 
 
 #include "TPSCharacter.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Log/TPSLog.h"
 #include "InputActionValue.h"
+#include "KismetAnimationLibrary.h"
 #include "Actors/TPSPickUpBase.h"
 #include "Actors/TPSShotImpactField.h"
 #include "Actors/Components/TPSDataComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Consts/TPSConsts.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Log/TPSLog.h"
 #include "Logic/ITPSInteractionActorInterface.h"
 #include "Util/TPSUtil.h"
 
@@ -212,10 +212,26 @@ void ATPSCharacter::Move( const FInputActionValue& Value )
 {
 	if ( Value.GetValueType() != EInputActionValueType::Axis2D ) return;
 
+	// UE_LOG( LogGameplay, Log, TEXT("move value : { %f %f }" ), Value.Get< FVector2D >().X, Value.Get< FVector2D >().Y );
+
+	double xValue = Value.Get< FVector2D >().X;
+	double yValue = Value.Get< FVector2D >().Y;
+
 	FRotator rotator = GetControlRotation();
+	
 	// TODO : 아래 계산 공식에서 Roll 이 RightVector 뽑는 데 필요한가? wasd 모두 yaw 만 필요하지 않나 싶은데..
-	AddMovementInput( UKismetMathLibrary::GetRightVector( FRotator( rotator.Pitch, rotator.Yaw, 0.0f ) ), Value.Get< FVector2D >().X );
-	AddMovementInput( UKismetMathLibrary::GetForwardVector( FRotator( 0.0f, rotator.Yaw, 0.0f ) ), Value.Get< FVector2D >().Y );
+	if ( FMath::Abs( xValue ) > 0 ) AddMovementInput( UKismetMathLibrary::GetRightVector( FRotator( rotator.Pitch, rotator.Yaw, 0.0f ) ), xValue );
+	if ( FMath::Abs( yValue ) > 0 ) AddMovementInput( UKismetMathLibrary::GetForwardVector( FRotator( 0.0f, rotator.Yaw, 0.0f  ) ), yValue );
+
+	// NOTE : 방법 1 - 실제 움직이는 방향으로 애니메이션 결정.
+	float directionValue = UKismetAnimationLibrary::CalculateDirection( GetVelocity(), GetActorRotation() );
+	UE_LOG( LogGameplay, Log, TEXT( "directionValue : %f" ), directionValue );
+	if ( directionValue >= -45.0f && directionValue < 45.0f )      MovingDirection = ECharacterMoveDirection::Forward;
+	else if ( directionValue >= 45.0f && directionValue < 135.0f ) MovingDirection = ECharacterMoveDirection::Right;
+	else if ( FMath::Abs( directionValue ) >= 135.0f )             MovingDirection = ECharacterMoveDirection::Backward;
+	else											               MovingDirection = ECharacterMoveDirection::Left;
+
+	// NOTE : 방법 2 - 누르는 방향키로 애니메이션 결정.
 }
 
 // 시점을 이동한다.
