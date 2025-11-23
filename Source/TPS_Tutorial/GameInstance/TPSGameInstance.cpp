@@ -2,4 +2,26 @@
 
 
 #include "GameInstance/TPSGameInstance.h"
+#include "Manager/TPSUIManager.h"
 
+
+// 싱글턴 객체를 얻는다.
+UTPSGameInstance* UTPSGameInstance::GetGameInstance( UWorld* InWorld )
+{
+	if ( InWorld ) return InWorld->GetGameInstance< UTPSGameInstance >();
+	
+	if ( UWorld* world = GEngine->GetWorld() )
+	{
+		return world->GetGameInstance< UTPSGameInstance >();
+	}
+	
+	return nullptr;
+}
+
+// 초기화한다.
+void UTPSGameInstance::Init()
+{
+	Super::Init();
+	
+	UIManager = UTPSUIManager::Create( this );
+}

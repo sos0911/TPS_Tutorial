@@ -19,4 +19,7 @@ class TPS_TUTORIAL_API ATPSPlayerController : public APlayerController
 
 public:
 	ATPSPlayerController();
+	
+	// 플레이 시작한다.
+	virtual void BeginPlay() override;
 };

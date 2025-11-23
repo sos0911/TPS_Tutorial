@@ -1,4 +1,4 @@
 #pragma once
 
 
-using TPSActorPtr = TWeakObjectPtr< class AActor >;
+using TPSActorPtr = TWeakObjectPtr< AActor >;
