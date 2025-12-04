@@ -75,6 +75,8 @@ void ATPSCharacter::BeginPlay()
 	{
 		capsuleComp->OnComponentBeginOverlap.AddDynamic( this, &ATPSCharacter::OnBeginOverlap );
 	}
+	
+	CurrentCameraComp = IsTPSMode ? TPSCameraComp : FPSCameraComp;
 }
 
 // 무기를 줍는 상호작용을 실행한다.
@@ -328,6 +330,7 @@ void ATPSCharacter::ToggleCameraMode( const FInputActionValue& Value )
 	
 	float cameraBlendTime = 0.2f;
 	playerController->SetViewTargetWithBlend( IsTPSMode ? TPSCameraComp->GetChildActor() : FPSCameraComp->GetChildActor(), cameraBlendTime, VTBlend_Linear, 0, true );
+	CurrentCameraComp = IsTPSMode ? TPSCameraComp : FPSCameraComp;
 
 	TWeakObjectPtr< ATPSCharacter > thisPtr = this;
 	auto ftrToggleFaceCompVisibility = [ this, thisPtr ] ()
@@ -364,6 +367,7 @@ void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
 	if ( IsTPSMode )
 	{
 		playerController->SetViewTargetWithBlend( IsZoomMode ? TPSZoomCameraComp->GetChildActor() : TPSCameraComp->GetChildActor(), cameraBlendTime );
+		CurrentCameraComp = IsZoomMode ? TPSZoomCameraComp : TPSCameraComp;
 	}
 	else
 	{
@@ -377,10 +381,12 @@ void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
 			if ( !childActorComp ) return;
 			
 			playerController->SetViewTargetWithBlend( childActorComp->GetChildActor(), cameraBlendTime, VTBlend_Linear, 0, true);
+			CurrentCameraComp = childActorComp;
 		}
 		else
 		{
 			playerController->SetViewTargetWithBlend( FPSCameraComp->GetChildActor(), cameraBlendTime, VTBlend_Linear, 0, true );
+			CurrentCameraComp = FPSCameraComp;
 		}
 	}
 }
@@ -440,31 +446,64 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 	{
 		if ( const USkeletalMeshSocket* muzzleSocket = weaponMeshComp->GetSocketByName( TEXT( "Muzzle" ) ) )
 		{
-			FVector rayStartLoc = muzzleSocket->GetSocketLocation( weaponMeshComp );
-			FVector rayEndLoc   = rayStartLoc + muzzleSocket->GetSocketTransform( weaponMeshComp ).GetUnitAxis( EAxis::X ) * 10000.0f;
-				
-			FHitResult hitResult;
-			TArray< TEnumAsByte< EObjectTypeQuery > > objTypes =
+			bool bHit = false;
+			// Step 1 : 카메라 위치에서 카메라가 바라보는 방향으로 충돌 검출.
 			{
-				UEngineTypes::ConvertToObjectType( ECC_WorldStatic  ),
-				UEngineTypes::ConvertToObjectType( ECC_WorldDynamic ),
-				UEngineTypes::ConvertToObjectType( ECC_Destructible )
-			};
-			
-			FCollisionQueryParams queryParams;
-			queryParams.AddIgnoredActor( this );
-			
-			bool bHit = GetWorld()->LineTraceSingleByObjectType( hitResult, rayStartLoc, rayEndLoc, FCollisionObjectQueryParams( objTypes ), queryParams );
-
-			if ( bHit )
-			{
-				FActorSpawnParameters spawnParams;
-				spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				FVector rayStartLoc = CurrentCameraComp->GetComponentLocation();
+				FVector rayEndLoc   = rayStartLoc + CurrentCameraComp->GetForwardVector() * 10000.0f;
 				
-				ATPSShotImpactField* fieldActor = GetWorld()->SpawnActor< ATPSShotImpactField >(
-					LoadClass< ATPSShotImpactField >( nullptr, *ATPSShotImpactField::GetPath() ),
-					FVector( hitResult.ImpactPoint ), FRotator(), spawnParams );
+				FHitResult hitResult;
+				TArray< TEnumAsByte< EObjectTypeQuery > > objTypes =
+				{
+					UEngineTypes::ConvertToObjectType( ECC_WorldStatic  ),
+					UEngineTypes::ConvertToObjectType( ECC_WorldDynamic ),
+					UEngineTypes::ConvertToObjectType( ECC_Destructible )
+				};
+				
+				FCollisionQueryParams queryParams;
+				queryParams.AddIgnoredActor( this );
+			
+				bHit = GetWorld()->LineTraceSingleByObjectType( hitResult, rayStartLoc, rayEndLoc, FCollisionObjectQueryParams( objTypes ), queryParams );
+				if ( bHit )
+				{
+					FActorSpawnParameters spawnParams;
+					spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				
+					ATPSShotImpactField* fieldActor = GetWorld()->SpawnActor< ATPSShotImpactField >(
+						LoadClass< ATPSShotImpactField >( nullptr, *ATPSShotImpactField::GetPath() ),
+						FVector( hitResult.ImpactPoint ), FRotator(), spawnParams );
+				}
 			}
+			
+			// // Step 2 : 총구에서 충돌 검출된 위치까지 충돌 검출하여 충돌 처리함.
+			// // NOTE : 단순히 Step 1처럼 충돌 처리 한번 하고 끝낼 수 있지만 추후 실제 총알 발사 등의 스폰 처리를 위하여 이렇게 일괄 처리한다.
+			// {
+			// 	FVector rayStartLoc = muzzleSocket->GetSocketLocation( weaponMeshComp );
+			// 	FVector rayEndLoc   = bHit ? hitLocation : rayStartLoc + muzzleSocket->GetSocketTransform( weaponMeshComp ).GetUnitAxis( EAxis::X ) * 10000.0f;
+			// 	
+			// 	FHitResult hitResult;
+			// 	TArray< TEnumAsByte< EObjectTypeQuery > > objTypes =
+			// 	{
+			// 		UEngineTypes::ConvertToObjectType( ECC_WorldStatic  ),
+			// 		UEngineTypes::ConvertToObjectType( ECC_WorldDynamic ),
+			// 		UEngineTypes::ConvertToObjectType( ECC_Destructible )
+			// 	};
+			//
+			// 	FCollisionQueryParams queryParams;
+			// 	queryParams.AddIgnoredActor( this );
+			//
+			// 	bool bHit = GetWorld()->LineTraceSingleByObjectType( hitResult, rayStartLoc, rayEndLoc, FCollisionObjectQueryParams( objTypes ), queryParams );
+			//
+			// 	if ( bHit )
+			// 	{
+			// 		FActorSpawnParameters spawnParams;
+			// 		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			// 	
+			// 		ATPSShotImpactField* fieldActor = GetWorld()->SpawnActor< ATPSShotImpactField >(
+			// 			LoadClass< ATPSShotImpactField >( nullptr, *ATPSShotImpactField::GetPath() ),
+			// 			FVector( hitResult.ImpactPoint ), FRotator(), spawnParams );
+			// 	}
+			// }
 		}
 	}
 	

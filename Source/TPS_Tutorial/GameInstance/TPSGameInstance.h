@@ -23,7 +23,7 @@ public:
 	
 public:
 	// 싱글턴 객체를 얻는다.
-	static UTPSGameInstance* GetGameInstance( UWorld* InWorld = nullptr );
+	static UTPSGameInstance* GetGameInstance();
 	
 	// UI 관리자 객체를 얻는다.
 	UTPSUIManager* GetUIManager() const { return UIManager.Get(); }

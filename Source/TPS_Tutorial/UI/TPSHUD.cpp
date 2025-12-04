@@ -15,5 +15,11 @@ UTPSHUD* UTPSHUD::Create()
 	UTPSUIManager* uiManager = gameInstance->GetUIManager();
 	if ( !uiManager ) return nullptr;
 	
-	return uiManager->CreateAndAddViewport< UTPSHUD >( ( StaticClass() ) );
+	return uiManager->CreateAndAddViewport< UTPSHUD >( GetFilePath() );
+}
+
+// 파일 경로를 반환한다.
+FString UTPSHUD::GetFilePath()
+{
+	return TEXT( "/Game/CustomContents/UI/WBP_TPSHUD.WBP_TPSHUD" );
 }

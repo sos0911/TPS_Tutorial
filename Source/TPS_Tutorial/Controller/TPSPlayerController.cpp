@@ -2,9 +2,7 @@
 
 
 #include "TPSPlayerController.h"
-#include "GameInstance/TPSGameInstance.h"
 #include "Manager/TPSPlayerCameraManager.h"
-#include "Manager/TPSUIManager.h"
 #include "UI/TPSHUD.h"
 
 
@@ -18,14 +16,6 @@ void ATPSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	UTPSGameInstance* gameInstance = UTPSGameInstance::GetGameInstance( GetWorld() );
-	if ( !gameInstance ) return;
-	
-	UTPSUIManager* uiManager = gameInstance->GetUIManager();
-	if ( !uiManager ) return;
-	
-	uiManager->CreateAndAddViewport< UTPSHUD >( UTPSHUD::StaticClass() );
-	
-	// UTPSHUD::Create();
+	UTPSHUD::Create();
 }
 

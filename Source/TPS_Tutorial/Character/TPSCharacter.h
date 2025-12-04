@@ -74,6 +74,8 @@ private:
 	UChildActorComponent*   FPSCameraComp     = nullptr; // FPS 카메라 컴포넌트 객체
 	USkeletalMeshComponent* FaceComp		  = nullptr; // 얼굴 컴포넌트 객체
 	USkeletalMeshComponent* BodyComp		  = nullptr; // 몸통 컴포넌트 객체
+	
+	UChildActorComponent*   CurrentCameraComp = nullptr; // 현재 사용 중인 카메라 컴포넌트 객체
 	TPSActorPtr				CurrentWeapon	  = nullptr; // 현재 장착중인 무기 객체
 
 	bool IsLeaning  = false; // 기울이고 있는가 여부

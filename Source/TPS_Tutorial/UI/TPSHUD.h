@@ -18,4 +18,6 @@ public:
 	// 생성한다.
 	static UTPSHUD* Create();
 	
+	// 파일 경로를 반환한다.
+	static FString GetFilePath();
 };
