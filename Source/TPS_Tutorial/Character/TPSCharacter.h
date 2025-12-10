@@ -149,4 +149,7 @@ protected:
 private:
 	// 컨트롤러 인풋을 더한다.
 	void _AddControllerInput( const ERotationType RotationType, const float Value );
+	
+	// HUD UI를 토글한다.
+	void _ToggleHUDUI( const bool bOn );
 };

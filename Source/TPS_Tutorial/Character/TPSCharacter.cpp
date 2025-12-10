@@ -12,9 +12,12 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameInstance/TPSGameInstance.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Log/TPSLog.h"
 #include "Logic/ITPSInteractionActorInterface.h"
+#include "Manager/TPSUIManager.h"
+#include "UI/TPSHUD.h"
 #include "Util/TPSUtil.h"
 
 
@@ -70,6 +73,8 @@ void ATPSCharacter::BeginPlay()
 
 	IsTPSMode  = true;
 	IsZoomMode = false;
+	
+	_ToggleHUDUI( false );
 
 	if ( UCapsuleComponent* capsuleComp = GetCapsuleComponent() )
 	{
@@ -152,6 +157,8 @@ bool ATPSCharacter::HandlePickUpWeaponInteract( AActor* OtherActor )
 
 	CurrentWeapon = weapon;
 	CurrentWeaponType = weaponData->WeaponType;
+	
+	if ( IsTPSMode || !IsZoomMode ) _ToggleHUDUI( true );
 
 	return true;
 }
@@ -174,6 +181,18 @@ void ATPSCharacter::_AddControllerInput( const ERotationType RotationType, const
 		}
 		break;
 	}
+}
+
+// HUD UI를 토글한다.
+void ATPSCharacter::_ToggleHUDUI( const bool bOn )
+{
+	UTPSUIManager* uiManager = UTPSGameInstance::GetGameInstance()->GetUIManager();
+	if ( !uiManager ) return;
+	
+	UUserWidget* hudUI = uiManager->FindWidget( UTPSHUD::StaticClass() );
+	if ( !hudUI ) return;
+	
+	hudUI->SetVisibility( bOn ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed );
 }
 
 // Called every frame
@@ -314,6 +333,8 @@ void ATPSCharacter::Drop( const FInputActionValue& Value )
 	CurrentWeapon->Destroy();
 	CurrentWeapon = nullptr;
 	CurrentWeaponType = EWeaponType::Max;
+	
+	_ToggleHUDUI( false );
 }
 
 // 카메라 시점을 변경한다.
@@ -389,6 +410,10 @@ void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
 			CurrentCameraComp = FPSCameraComp;
 		}
 	}
+	
+	if ( !CurrentWeapon.IsValid() )      _ToggleHUDUI( false );
+	else if ( !IsTPSMode && IsZoomMode ) _ToggleHUDUI( false );
+	else                                 _ToggleHUDUI( true  );
 }
 
 // 무기를 발사하는 상호작용을 실행한다.

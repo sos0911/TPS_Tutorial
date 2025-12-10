@@ -8,7 +8,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
 #include "GameInstance/TPSGameInstance.h"
-#include "Util/TPSEngineUtil.h"
+#include "Util/TPSUtilEngine.h"
 #include "TPSUIManager.generated.h"
 
 
@@ -37,18 +37,25 @@ public:
 		if ( FilePath.IsEmpty() ) return nullptr;
 		if ( !FilePath.Contains( TEXT( "_C" ) ) ) FilePath.Append( TEXT( "_C" ) );
 		
-		UClass* widgetClass = TPSEngineUtil::LoadUserWidgetClass( FilePath );
+		UClass* widgetClass = TPSUtilEngine::LoadUserWidgetClass( FilePath );
 		if ( !widgetClass ) return nullptr;
 	
 		// T* widget = CreateWidget< T >( GetWorld(), widgetClass );
 		T* widget = CreateWidget< T >( UTPSGameInstance::GetGameInstance(), widgetClass );
 		if ( !widget ) return nullptr;
 	
-		WidgetMap.Add( widgetClass, widget );
+		// NOTE : blueprint class로 Uclass* 를 저장하면 안됨. 쿼리 시 StaticClass() 로 찾을 것이기 때문.
+		WidgetMap.Add( widgetClass->GetSuperClass(), widget );
 		widget->AddToViewport( Zorder );
 	
 		return widget;
 	}
+	
+	// 데이터를 정리한다.
+	void Clear();
+	
+	// 생성된 UI 중 조건에 맞는 UI를 찾아서 반환한다
+	UUserWidget* FindWidget( UClass* WidgetClass ) const;
 };
 
 // UI 매니저를 반환한다.

@@ -38,3 +38,11 @@ void UTPSGameInstance::Init()
 	
 	UIManager = UTPSUIManager::Create( this );
 }
+
+// 종료한다.
+void UTPSGameInstance::Shutdown()
+{
+	if ( UIManager.IsValid() ) UIManager->Clear();
+	
+	Super::Shutdown();
+}

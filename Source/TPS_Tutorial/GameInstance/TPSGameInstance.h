@@ -31,4 +31,7 @@ public:
 protected:
 	// 초기화한다.
 	virtual void Init() override;
+	
+	// 종료한다.
+	virtual void Shutdown() override;
 };
