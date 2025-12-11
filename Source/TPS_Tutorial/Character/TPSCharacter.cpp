@@ -497,6 +497,14 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 					ATPSShotImpactField* fieldActor = GetWorld()->SpawnActor< ATPSShotImpactField >(
 						LoadClass< ATPSShotImpactField >( nullptr, *ATPSShotImpactField::GetPath() ),
 						FVector( hitResult.ImpactPoint ), FRotator(), spawnParams );
+					
+					FTimerHandle removeImpactFieldTimerHandle;
+					GetWorldTimerManager().SetTimer( removeImpactFieldTimerHandle, [ fieldActor ] ()
+					{
+						if ( !fieldActor ) return;
+						
+						fieldActor->Destroy();
+					}, 0.1f, false );
 				}
 			}
 			
