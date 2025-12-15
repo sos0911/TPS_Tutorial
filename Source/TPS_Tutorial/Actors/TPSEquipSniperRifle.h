@@ -14,4 +14,16 @@ class TPS_TUTORIAL_API ATPSEquipSniperRifle : public ATPSEquipBase
 {
 	GENERATED_BODY()
 	
+protected:
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Components" )
+	USceneCaptureComponent2D* SceneCaptureComp = nullptr; // 스코프 씬 캡쳐 컴포넌트
+	
+public:
+	// 생성자 
+	ATPSEquipSniperRifle();
+	
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+	
 };
