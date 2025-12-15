@@ -10,10 +10,29 @@
 #include "TPSEquipBase.generated.h"
 
 
+class UTPSDataComponent;
+class USpringArmComponent;
+class UChildActorComponent;
+class USkeletalMeshComponent;
+
+
 UCLASS()
 class TPS_TUTORIAL_API ATPSEquipBase : public AActor, public ITPSEquipInteractionActorInterface
 {
 	GENERATED_BODY()
+	
+protected:
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Components" )
+	USkeletalMeshComponent* WeaponComp = nullptr; // 무기 스켈레톤 메쉬 컴포넌트
+	
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Components" )
+	USpringArmComponent* SpringArmComp = nullptr; // 스프링암 컴포넌트
+	
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Components" )
+	UChildActorComponent* SpringArmChildComp = nullptr; // 스프링암 자식 컴포넌트
+	
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Components" )
+	UTPSDataComponent* DataComp = nullptr; // 데이터 컴포넌트
 
 public:
 	// Sets default values for this actor's properties
