@@ -233,16 +233,30 @@ void ATPSCharacter::Move( const FInputActionValue& Value )
 {
 	if ( Value.GetValueType() != EInputActionValueType::Axis2D ) return;
 
-	// UE_LOG( LogGameplay, Log, TEXT("move value : { %f %f }" ), Value.Get< FVector2D >().X, Value.Get< FVector2D >().Y );
+	UE_LOG( LogGameplay, Log, TEXT("move value : { %f %f }" ), Value.Get< FVector2D >().X, Value.Get< FVector2D >().Y );
 
 	double xValue = Value.Get< FVector2D >().X;
 	double yValue = Value.Get< FVector2D >().Y;
 
 	FRotator rotator = GetControlRotation();
 	
+	UE_LOG( LogGameplay, Log, TEXT("rotate value : { %f %f }" ), rotator.Pitch, rotator.Yaw );
+	
 	// TODO : 아래 계산 공식에서 Roll 이 RightVector 뽑는 데 필요한가? wasd 모두 yaw 만 필요하지 않나 싶은데..
-	if ( FMath::Abs( xValue ) > 0 ) AddMovementInput( UKismetMathLibrary::GetRightVector( FRotator( rotator.Pitch, rotator.Yaw, 0.0f ) ), xValue );
-	if ( FMath::Abs( yValue ) > 0 ) AddMovementInput( UKismetMathLibrary::GetForwardVector( FRotator( 0.0f, rotator.Yaw, 0.0f  ) ), yValue );
+	if ( FMath::Abs( xValue ) > 0 )
+	{
+		FVector movementVector = UKismetMathLibrary::GetRightVector( FRotator( rotator.Pitch, rotator.Yaw, 0.0f ) );
+		UE_LOG( LogGameplay, Log, TEXT( "Add Movement Input : [%f, %f, %f]" ), movementVector.X, movementVector.Y, movementVector.Z );
+		
+		AddMovementInput( movementVector, xValue );
+	}
+	if ( FMath::Abs( yValue ) > 0 )
+	{
+		FVector movementVector = UKismetMathLibrary::GetForwardVector( FRotator( 0.0f, rotator.Yaw, 0.0f  ) );
+		UE_LOG( LogGameplay, Log, TEXT( "Add Movement Input : [%f, %f, %f]" ), movementVector.X, movementVector.Y, movementVector.Z );
+		
+		AddMovementInput( movementVector, yValue );
+	}
 
 	// NOTE : 방법 1 - 실제 움직이는 방향으로 애니메이션 결정.
 	float directionValue = UKismetAnimationLibrary::CalculateDirection( GetVelocity(), GetActorRotation() );
@@ -434,6 +448,11 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 	case EWeaponType::Pistol:
 		{
 			FireMontagePath += TEXT( "Pistol/MT_Pistol_Fire.MT_Pistol_Fire" );
+		}
+		break;
+	case EWeaponType::SniperRifle:
+		{
+			FireMontagePath += TEXT( "SniperRifle/MT_SniperRifle_Fire.MT_SniperRifle_Fire" );
 		}
 		break;
 	}

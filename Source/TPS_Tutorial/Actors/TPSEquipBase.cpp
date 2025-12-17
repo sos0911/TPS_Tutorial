@@ -13,7 +13,8 @@ ATPSEquipBase::ATPSEquipBase()
 	PrimaryActorTick.bCanEverTick = false;
 	
 	WeaponComp = CreateDefaultSubobject< USkeletalMeshComponent >( TEXT( "Weapon" ) );
-	
+	RootComponent = WeaponComp;
+
 	SpringArmComp = CreateDefaultSubobject< USpringArmComponent >( TEXT( "SpringArm" ) );
 	SpringArmComp->SetupAttachment( WeaponComp );
 	

@@ -23,7 +23,6 @@ public:
 	FDataTableRowHandle DataRowHandle;
 
 	// 데이터를 반환한다.
-	// FWeaponData* GetData() const { return DataRowHandle.GetRow< FWeaponData >(TEXT( "DTRow" ) ); }
 	template< typename RowT >
 	const RowT* GetData( const TCHAR* Context = TEXT( "DTRow" ) ) const
 	{
@@ -38,9 +37,4 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
-public:
-// 	// Called every frame
-// 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-// 	                           FActorComponentTickFunction* ThisTickFunction) override;
 };
