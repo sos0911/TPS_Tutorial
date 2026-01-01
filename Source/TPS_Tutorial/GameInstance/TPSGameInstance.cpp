@@ -2,6 +2,7 @@
 
 
 #include "GameInstance/TPSGameInstance.h"
+#include "Log/TPSLog.h"
 #include "Manager/TPSUIManager.h"
 
 
@@ -31,6 +32,17 @@ UTPSGameInstance* UTPSGameInstance::GetGameInstance()
 	return nullptr;
 }
 
+// UI 관리자 객체를 얻는다.
+UTPSUIManager* UTPSGameInstance::GetUIManager() const
+{
+	if ( !UIManager )
+	{
+		UE_LOG( LogGameplay, Warning, TEXT("[TPS] UI Manager invalid" ) );
+	}
+	
+	return UIManager;
+}
+
 // 초기화한다.
 void UTPSGameInstance::Init()
 {
@@ -42,7 +54,7 @@ void UTPSGameInstance::Init()
 // 종료한다.
 void UTPSGameInstance::Shutdown()
 {
-	if ( UIManager.IsValid() ) UIManager->Clear();
+	if ( UIManager ) UIManager->Clear();
 	
 	Super::Shutdown();
 }
