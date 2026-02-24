@@ -13,7 +13,28 @@ ATPSEquipSniperRifle::ATPSEquipSniperRifle()
 	// if ( SceneCaptureComp ) SceneCaptureComp->SetupAttachment( WeaponComp, TEXT( "Scope" ) );
 	
 	SceneCaptureComp = CreateDefaultSubobject< USceneCaptureComponent2D >( TEXT( "SceneCaptureComp" ) );
-	if ( SceneCaptureComp ) SceneCaptureComp->SetupAttachment( WeaponComp, TEXT( "Scope" ) );
+	if ( SceneCaptureComp )
+	{
+		SceneCaptureComp->SetupAttachment( WeaponComp, TEXT( "Scope" ) );
+		SceneCaptureComp->bCaptureEveryFrame = false;
+		SceneCaptureComp->bCaptureOnMovement = false;
+	}
+}
+
+// 씬 캡쳐를 활성화/비활성화한다.
+void ATPSEquipSniperRifle::SetSceneCaptureEnabled( bool bEnabled )
+{
+	if ( !SceneCaptureComp ) return;
+
+	if ( bEnabled )
+	{
+		SceneCaptureComp->bCaptureEveryFrame = true;
+		SceneCaptureComp->CaptureScene();
+	}
+	else
+	{
+		SceneCaptureComp->bCaptureEveryFrame = false;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -25,7 +46,7 @@ void ATPSEquipSniperRifle::BeginPlay()
 	ScopeMeshComp = FindComponentByTag< UStaticMeshComponent >( "Scope" );
 	
 	// TODO : 메터리얼에 스코프 소켓에서 보이는 뷰포트 화면 렌더링
-	UTextureRenderTarget2D* renderTarget2D = UKismetRenderingLibrary::CreateRenderTarget2D( this, 1000, 1000, RTF_RGBA16f );
+	UTextureRenderTarget2D* renderTarget2D = UKismetRenderingLibrary::CreateRenderTarget2D( this, 512, 512, RTF_RGBA8 );
 	
 	// 씬캡쳐 컴포넌트가 매 틱 찍는 스크린샷을 renderTarget2D 로 받아온다.
 	SceneCaptureComp->TextureTarget = renderTarget2D;
