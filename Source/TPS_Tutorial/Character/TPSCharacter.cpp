@@ -196,10 +196,10 @@ void ATPSCharacter::_ToggleHUDUI( const bool bOn )
 	UTPSUIManager* uiManager = gameInstance->GetUIManager();
 	if ( !uiManager ) return;
 	
-	UUserWidget* hudUI = uiManager->FindWidget( UTPSHUD::StaticClass() );
+	UTPSHUD* hudUI = Cast< UTPSHUD >( uiManager->FindWidget( UTPSHUD::StaticClass() ) );
 	if ( !hudUI ) return;
 	
-	hudUI->SetVisibility( bOn ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed );
+	hudUI->ToggleCrosshair( bOn );
 }
 
 // Called every frame
