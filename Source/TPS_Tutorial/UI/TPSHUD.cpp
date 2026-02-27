@@ -4,6 +4,8 @@
 #include "UI/TPSHUD.h"
 #include "GameInstance/TPSGameInstance.h"
 #include "Manager/TPSUIManager.h"
+#include "Util/TPSUtilWidget.h"
+#include <Components/TextBlock.h>
 
 
 // 생성한다.
@@ -22,4 +24,10 @@ UTPSHUD* UTPSHUD::Create()
 FString UTPSHUD::GetFilePath()
 {
 	return TEXT( "/Game/CustomContents/UI/WBP_TPSHUD.WBP_TPSHUD" );
+}
+
+// 크로스헤어 가시성을 토글한다.
+void UTPSHUD::ToggleCrosshair( const bool bOn ) const
+{
+	TPSUtilWidget::SetVisibility( CrossHairPanel, bOn ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed );
 }

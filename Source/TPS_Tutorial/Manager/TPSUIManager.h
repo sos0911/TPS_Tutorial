@@ -18,7 +18,8 @@ class TPS_TUTORIAL_API UTPSUIManager : public UObject
 	GENERATED_BODY()
 	
 private:
-	TMap< UClass*, UUserWidget* > WidgetMap; // UI 맵 
+	UPROPERTY()
+	TMap< UClass*, UUserWidget* > WidgetMap; // UI 맵
 	
 public:
 	// 생성자

@@ -18,6 +18,7 @@
 #include "Logic/ITPSInteractionActorInterface.h"
 #include "Manager/TPSUIManager.h"
 #include "UI/TPSHUD.h"
+#include "Actors/TPSEquipSniperRifle.h"
 #include "Util/TPSUtil.h"
 
 
@@ -144,12 +145,15 @@ bool ATPSCharacter::HandlePickUpWeaponInteract( AActor* OtherActor )
 
 	if ( !BodyComp->DoesSocketExist( socketName ) ) return false;
 
+	UWorld* world = GetWorld();
+	if ( !world ) return false;
+
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner                          = this;
 	spawnParams.Instigator                     = GetInstigator();
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	
-	AActor* weapon = GetWorld()->SpawnActor< AActor >( weaponData->EquipWeapon, FTransform::Identity, spawnParams );
+
+	AActor* weapon = world->SpawnActor< AActor >( weaponData->EquipWeapon, FTransform::Identity, spawnParams );
 	if ( !weapon ) return false;
 
 	FAttachmentTransformRules attachmentRules( EAttachmentRule::SnapToTarget, true );
@@ -186,13 +190,16 @@ void ATPSCharacter::_AddControllerInput( const ERotationType RotationType, const
 // HUD UI를 토글한다.
 void ATPSCharacter::_ToggleHUDUI( const bool bOn )
 {
-	UTPSUIManager* uiManager = UTPSGameInstance::GetGameInstance()->GetUIManager();
+	UTPSGameInstance* gameInstance = UTPSGameInstance::GetGameInstance();
+	if ( !gameInstance ) return;
+
+	UTPSUIManager* uiManager = gameInstance->GetUIManager();
 	if ( !uiManager ) return;
 	
-	UUserWidget* hudUI = uiManager->FindWidget( UTPSHUD::StaticClass() );
+	UTPSHUD* hudUI = Cast< UTPSHUD >( uiManager->FindWidget( UTPSHUD::StaticClass() ) );
 	if ( !hudUI ) return;
 	
-	hudUI->SetVisibility( bOn ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed );
+	hudUI->ToggleCrosshair( bOn );
 }
 
 // Called every frame
@@ -233,16 +240,30 @@ void ATPSCharacter::Move( const FInputActionValue& Value )
 {
 	if ( Value.GetValueType() != EInputActionValueType::Axis2D ) return;
 
-	// UE_LOG( LogGameplay, Log, TEXT("move value : { %f %f }" ), Value.Get< FVector2D >().X, Value.Get< FVector2D >().Y );
+	UE_LOG( LogGameplay, Log, TEXT("move value : { %f %f }" ), Value.Get< FVector2D >().X, Value.Get< FVector2D >().Y );
 
 	double xValue = Value.Get< FVector2D >().X;
 	double yValue = Value.Get< FVector2D >().Y;
 
 	FRotator rotator = GetControlRotation();
 	
+	UE_LOG( LogGameplay, Log, TEXT("rotate value : { %f %f }" ), rotator.Pitch, rotator.Yaw );
+	
 	// TODO : 아래 계산 공식에서 Roll 이 RightVector 뽑는 데 필요한가? wasd 모두 yaw 만 필요하지 않나 싶은데..
-	if ( FMath::Abs( xValue ) > 0 ) AddMovementInput( UKismetMathLibrary::GetRightVector( FRotator( rotator.Pitch, rotator.Yaw, 0.0f ) ), xValue );
-	if ( FMath::Abs( yValue ) > 0 ) AddMovementInput( UKismetMathLibrary::GetForwardVector( FRotator( 0.0f, rotator.Yaw, 0.0f  ) ), yValue );
+	if ( FMath::Abs( xValue ) > 0 )
+	{
+		FVector movementVector = UKismetMathLibrary::GetRightVector( FRotator( rotator.Pitch, rotator.Yaw, 0.0f ) );
+		UE_LOG( LogGameplay, Log, TEXT( "Add Movement Input : [%f, %f, %f]" ), movementVector.X, movementVector.Y, movementVector.Z );
+		
+		AddMovementInput( movementVector, xValue );
+	}
+	if ( FMath::Abs( yValue ) > 0 )
+	{
+		FVector movementVector = UKismetMathLibrary::GetForwardVector( FRotator( 0.0f, rotator.Yaw, 0.0f  ) );
+		UE_LOG( LogGameplay, Log, TEXT( "Add Movement Input : [%f, %f, %f]" ), movementVector.X, movementVector.Y, movementVector.Z );
+		
+		AddMovementInput( movementVector, yValue );
+	}
 
 	// NOTE : 방법 1 - 실제 움직이는 방향으로 애니메이션 결정.
 	float directionValue = UKismetAnimationLibrary::CalculateDirection( GetVelocity(), GetActorRotation() );
@@ -328,12 +349,28 @@ void ATPSCharacter::Drop( const FInputActionValue& Value )
 	// spawnParams.Instigator                     = GetInstigator();
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	
-	AActor* weapon = GetWorld()->SpawnActor< AActor >( weaponData->PickUpWeapon, FTransform( dropRotation, dropLocation ), spawnParams );
+	UWorld* world = GetWorld();
+	if ( !world ) return;
+
+	world->SpawnActor< AActor >( weaponData->PickUpWeapon, FTransform( dropRotation, dropLocation ), spawnParams );
+
+	// 줌 상태에서 드랍하는 경우 카메라와 줌 상태를 원복한다.
+	if ( IsZoomMode )
+	{
+		IsZoomMode = false;
+		CurrentCameraComp = IsTPSMode ? TPSCameraComp : FPSCameraComp;
+
+		if ( APlayerController* playerController = Cast< APlayerController >( GetController() ) )
+		{
+			AActor* viewTarget = CurrentCameraComp ? CurrentCameraComp->GetChildActor() : nullptr;
+			if ( viewTarget ) playerController->SetViewTargetWithBlend( viewTarget, 0.2f );
+		}
+	}
 
 	CurrentWeapon->Destroy();
 	CurrentWeapon = nullptr;
 	CurrentWeaponType = EWeaponType::Max;
-	
+
 	_ToggleHUDUI( false );
 }
 
@@ -411,6 +448,12 @@ void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
 		}
 	}
 	
+	// 스나이퍼 라이플의 경우 줌 시에만 씬 캡쳐를 활성화한다.
+	if ( ATPSEquipSniperRifle* sniperRifle = Cast< ATPSEquipSniperRifle >( CurrentWeapon.Get() ) )
+	{
+		sniperRifle->SetSceneCaptureEnabled( IsZoomMode );
+	}
+
 	if ( !CurrentWeapon.IsValid() )      _ToggleHUDUI( false );
 	else if ( !IsTPSMode && IsZoomMode ) _ToggleHUDUI( false );
 	else                                 _ToggleHUDUI( true  );
@@ -434,6 +477,11 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 	case EWeaponType::Pistol:
 		{
 			FireMontagePath += TEXT( "Pistol/MT_Pistol_Fire.MT_Pistol_Fire" );
+		}
+		break;
+	case EWeaponType::SniperRifle:
+		{
+			FireMontagePath += TEXT( "SniperRifle/MT_SniperRifle_Fire.MT_SniperRifle_Fire" );
 		}
 		break;
 	}
@@ -471,6 +519,8 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 	{
 		if ( const USkeletalMeshSocket* muzzleSocket = weaponMeshComp->GetSocketByName( TEXT( "Muzzle" ) ) )
 		{
+			if ( !CurrentCameraComp || !GetWorld() ) return false;
+
 			bool bHit = false;
 			// Step 1 : 카메라 위치에서 카메라가 바라보는 방향으로 충돌 검출.
 			{
@@ -499,11 +549,12 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 						FVector( hitResult.ImpactPoint ), FRotator(), spawnParams );
 					
 					FTimerHandle removeImpactFieldTimerHandle;
-					GetWorldTimerManager().SetTimer( removeImpactFieldTimerHandle, [ fieldActor ] ()
+					TWeakObjectPtr< ATPSShotImpactField > weakFieldActor = fieldActor;
+					GetWorldTimerManager().SetTimer( removeImpactFieldTimerHandle, [ weakFieldActor ] ()
 					{
-						if ( !fieldActor ) return;
-						
-						fieldActor->Destroy();
+						if ( !weakFieldActor.IsValid() ) return;
+
+						weakFieldActor->Destroy();
 					}, 0.1f, false );
 				}
 			}
