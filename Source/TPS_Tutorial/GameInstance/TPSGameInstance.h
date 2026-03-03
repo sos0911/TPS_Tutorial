@@ -10,28 +10,35 @@
 
 
 class UTPSUIManager;
+class UTPSDataManager;
 
 
 UCLASS()
 class TPS_TUTORIAL_API UTPSGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-	
+
 public:
 	UPROPERTY()
 	UTPSUIManager* UIManager;
-	
+
+	UPROPERTY()
+	UTPSDataManager* DataManager;
+
 public:
 	// 싱글턴 객체를 얻는다.
 	static UTPSGameInstance* GetGameInstance();
-	
+
 	// UI 관리자 객체를 얻는다.
 	UTPSUIManager* GetUIManager() const;
-	
+
+	// 데이터 관리자 객체를 얻는다.
+	UTPSDataManager* GetDataManager() const;
+
 protected:
 	// 초기화한다.
 	virtual void Init() override;
-	
+
 	// 종료한다.
 	virtual void Shutdown() override;
 };

@@ -3,6 +3,7 @@
 
 #include "GameInstance/TPSGameInstance.h"
 #include "Log/TPSLog.h"
+#include "Manager/TPSDataManager.h"
 #include "Manager/TPSUIManager.h"
 
 
@@ -39,22 +40,37 @@ UTPSUIManager* UTPSGameInstance::GetUIManager() const
 	{
 		UE_LOG( LogGameplay, Warning, TEXT("[TPS] UI Manager invalid" ) );
 	}
-	
+
 	return UIManager;
+}
+
+// 데이터 관리자 객체를 얻는다.
+UTPSDataManager* UTPSGameInstance::GetDataManager() const
+{
+	if ( !DataManager )
+	{
+		UE_LOG( LogGameplay, Warning, TEXT("[TPS] Data Manager invalid" ) );
+	}
+
+	return DataManager;
 }
 
 // 초기화한다.
 void UTPSGameInstance::Init()
 {
 	Super::Init();
-	
+
 	UIManager = UTPSUIManager::Create( this );
+
+	DataManager = UTPSDataManager::Create( this );
+	DataManager->Init();
 }
 
 // 종료한다.
 void UTPSGameInstance::Shutdown()
 {
 	if ( UIManager ) UIManager->Clear();
-	
+	if ( DataManager ) DataManager->Clear();
+
 	Super::Shutdown();
 }

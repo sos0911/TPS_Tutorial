@@ -235,6 +235,18 @@ void ATPSCharacter::OnBeginOverlap( UPrimitiveComponent* OverlappedComponent, AA
 	if ( HandlePickUpWeaponInteract( OtherActor ) ) interactionPickUpActorInterface->HandlePickUpWeaponInteract( this );
 }
 
+// 현재 무기 데이터를 반환한다.
+const FWeaponData& ATPSCharacter::GetWeaponData() const
+{
+	UTPSDataComponent* dataComponent = TPSUtil::GetValueForObjProp< UTPSDataComponent >( CurrentWeapon.Get() );
+	if ( !dataComponent ) return FWeaponData();
+
+	const FWeaponData* weaponData = dataComponent->GetData< FWeaponData >();
+	if ( !weaponData ) return FWeaponData();
+	
+	return *weaponData;
+}
+
 // 이동한다.
 void ATPSCharacter::Move( const FInputActionValue& Value )
 {
