@@ -4,12 +4,14 @@
 #pragma once
 
 
-#include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Consts/TPSConsts.h"
+#include "CoreMinimal.h"
 #include "TPSHUD.generated.h"
 
 
 class UTextBlock;
+class UWidgetSwitcher;
 
 
 UCLASS()
@@ -46,5 +48,5 @@ public:
 	void ToggleCrosshair( const bool bOn ) const;
 	
 	// 갱신한다.
-	void Refresh( const bool bAim, const EWeaponType WeaponType, const int32 LeftBullet );
+	void Refresh( const bool bAim, const EWeaponType WeaponType, const int32 LeftBullet ) const;
 };

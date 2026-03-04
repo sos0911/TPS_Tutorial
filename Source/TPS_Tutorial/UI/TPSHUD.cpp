@@ -3,12 +3,11 @@
 
 #include "UI/TPSHUD.h"
 #include "Character/TPSCharacter.h"
-#include "Consts/TPSConsts.h"
 #include "GameInstance/TPSGameInstance.h"
-#include "Kismet/GameplayStatics.h"
+#include "Manager/TPSDataManager.h"
 #include "Manager/TPSUIManager.h"
+#include "Util/TPSUtil.h"
 #include "Util/TPSUtilWidget.h"
-#include <Components/TextBlock.h>
 #include <Components/WidgetSwitcher.h>
 
 
@@ -37,17 +36,28 @@ void UTPSHUD::ToggleCrosshair( const bool bOn ) const
 }
 
 // 갱신한다.
-void UTPSHUD::Refresh( const bool bAim, const EWeaponType WeaponType, const int32 LeftBullet )
+void UTPSHUD::Refresh( const bool bAim, const EWeaponType WeaponType, const int32 LeftBullet ) const
 {
 	if ( !CrossHairPanel      ) return;
 	if ( !SwitcherWeaponState ) return;
 	
 	TPSUtilWidget::SetVisibility( CrossHairPanel, bAim ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed );
 	SwitcherWeaponState->SetActiveWidgetIndex( WeaponType == EWeaponType::None ? static_cast< int32 >( EWeaponState::Empty ) : static_cast< int32 >( EWeaponState::Gun ) );
+
+	// NOTE : Character actor 찾아서 datacomponent 참조해도 되나, 일단 EWeaponType 인자로 찾아본다.
+	// if ( ATPSCharacter* character = Cast< ATPSCharacter >( UGameplayStatics::GetPlayerCharacter( GetWorld(), 0 ) ) )
 	
-	ATPSCharacter* character = Cast< ATPSCharacter >( UGameplayStatics::GetPlayerCharacter( GetWorld(), 0 ) );
-	if ( character )
+	if ( UTPSDataManager* dataManager = GetTPSDataManager() )
 	{
-		// TODO : DataManager에서 DataTable 긁어와서 정해진 포맷대로 정보 텍스트 띄우기
+		const FStringTableData* stringData = dataManager->FindRow< FStringTableData >( TEXT( "DT_String" ), TEXT( "BULLET_DESCRIPTION" )     );
+		const FWeaponTableData* weaponData = dataManager->FindRow< FWeaponTableData >( TEXT( "DT_Weapon" ), *TPSUtil::ToString( WeaponType ) );
+		if ( stringData && weaponData )
+		{
+			FString resText = stringData->StringValue;
+			resText = resText.Replace( TEXT( "[LeftValue]" ), *TPSUtil::ToString( LeftBullet               ) );
+			resText = resText.Replace( TEXT( "[AllValue]"  ), *TPSUtil::ToString( weaponData->MagazineSize ) );
+			
+			TPSUtilWidget::SetText( TextBullet, resText );
+		}
 	}
 }

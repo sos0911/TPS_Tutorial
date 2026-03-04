@@ -4,6 +4,7 @@
 #pragma once
 
 
+#include "Components/TextBlock.h"
 #include "Components/Widget.h"
 
 
@@ -11,4 +12,7 @@ namespace TPSUtilWidget
 {
 	// visibility를 설정한다.
 	void SetVisibility( UWidget* Widget, ESlateVisibility Visibility );
+	
+	// 텍스트를 설정한다.
+	void SetText( UTextBlock* TextBlock, const FString& Text );
 }

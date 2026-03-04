@@ -11,3 +11,11 @@ void TPSUtilWidget::SetVisibility( UWidget* Widget, ESlateVisibility Visibility 
 	
 	Widget->SetVisibility( Visibility );
 }
+
+// 텍스트를 설정한다.
+void TPSUtilWidget::SetText( UTextBlock* TextBlock, const FString& Text )
+{
+	if ( !TextBlock ) return;
+
+	TextBlock->SetText( FText::FromString( Text ) );
+}

@@ -6,6 +6,7 @@
 
 #include "Manager/TPSDataManager.h"
 #include "Log/TPSLog.h"
+#include "Util/TPSUtilPath.h"
 
 
 // 인스턴스를 생성하여 반환한다.
@@ -17,8 +18,10 @@ UTPSDataManager* UTPSDataManager::Create( UObject* Owner )
 // 초기화한다. 모든 데이터 테이블을 로드한다.
 void UTPSDataManager::Init()
 {
-	_LoadTable( TEXT( "DT_Weapon" ), TEXT( "/Game/CustomContents/Data/DT_Weapon" ) );
-	_LoadTable( TEXT( "DT_String" ), TEXT( "/Game/CustomContents/Data/DT_String" ) );
+	const FString dataPathPrefixStr = TPSUtilPath::GetDataPath();
+	
+	_LoadTable( TEXT( "DT_Weapon" ), *( dataPathPrefixStr + TEXT( "DT_Weapon" ) ) );
+	_LoadTable( TEXT( "DT_String" ), *( dataPathPrefixStr + TEXT( "DT_String" ) ) );
 }
 
 // 데이터를 정리한다.

@@ -97,7 +97,7 @@ bool ATPSCharacter::HandlePickUpWeaponInteract( AActor* OtherActor )
 	UTPSDataComponent* dataComponent = TPSUtil::GetValueForObjProp< UTPSDataComponent >( pickUpActor );
 	if ( !dataComponent ) return false;
 
-	const FWeaponData* weaponData = dataComponent->GetData< FWeaponData >();
+	const FWeaponTableData* weaponData = dataComponent->GetData< FWeaponTableData >();
 	if ( !weaponData ) return false;
 
 	if ( !BodyComp ) return false;
@@ -236,13 +236,13 @@ void ATPSCharacter::OnBeginOverlap( UPrimitiveComponent* OverlappedComponent, AA
 }
 
 // 현재 무기 데이터를 반환한다.
-const FWeaponData& ATPSCharacter::GetWeaponData() const
+FWeaponTableData ATPSCharacter::GetWeaponData() const
 {
 	UTPSDataComponent* dataComponent = TPSUtil::GetValueForObjProp< UTPSDataComponent >( CurrentWeapon.Get() );
-	if ( !dataComponent ) return FWeaponData();
+	if ( !dataComponent ) return FWeaponTableData();
 
-	const FWeaponData* weaponData = dataComponent->GetData< FWeaponData >();
-	if ( !weaponData ) return FWeaponData();
+	const FWeaponTableData* weaponData = dataComponent->GetData< FWeaponTableData >();
+	if ( !weaponData ) return FWeaponTableData();
 	
 	return *weaponData;
 }
@@ -350,7 +350,7 @@ void ATPSCharacter::Drop( const FInputActionValue& Value )
 	UTPSDataComponent* dataComponent = TPSUtil::GetValueForObjProp< UTPSDataComponent >( CurrentWeapon.Get() );
 	if ( !dataComponent ) return;
 
-	const FWeaponData* weaponData = dataComponent->GetData< FWeaponData >();
+	const FWeaponTableData* weaponData = dataComponent->GetData< FWeaponTableData >();
 	if ( !weaponData ) return;
 
 	const FVector  dropLocation = GetActorLocation() + GetActorForwardVector() * 200.0f;

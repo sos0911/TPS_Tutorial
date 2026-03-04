@@ -140,7 +140,7 @@ public:
 	void OnBeginOverlap( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult );
 	
 	// 현재 무기 데이터를 반환한다.
-	const FWeaponData& GetWeaponData() const;
+	FWeaponTableData GetWeaponData() const;
 
 protected:
 	// Called when the game starts or when spawned

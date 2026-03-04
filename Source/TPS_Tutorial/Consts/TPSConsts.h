@@ -31,7 +31,7 @@ enum class ECharacterMoveDirection : uint8
 };
 
 USTRUCT( BlueprintType )
-struct FWeaponData : public FTableRowBase
+struct FWeaponTableData : public FTableRowBase
 {
 	GENERATED_BODY()
 
@@ -58,4 +58,14 @@ struct FWeaponData : public FTableRowBase
 	// EquipWeapon: BP Equip We 클래스를 참조 (AEquipActor의 자식 클래스)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
 	TSubclassOf< class AActor > EquipWeapon;
+};
+
+USTRUCT( BlueprintType )
+struct FStringTableData : public FTableRowBase
+{
+	GENERATED_BODY()
+	
+	// StringValue
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "String Data")
+	FString StringValue = TEXT( "" );
 };
