@@ -2,17 +2,24 @@
 
 
 #include "TPSCharacter.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "KismetAnimationLibrary.h"
 #include "Actors/TPSPickUpBase.h"
 #include "Actors/TPSShotImpactField.h"
 #include "Actors/Components/TPSDataComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Consts/TPSConsts.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameInstance/TPSGameInstance.h"
+#include "GAS/TPSAbilitySystemComponent.h"
+#include "GAS/TPSAttributeSet.h"
+#include "GAS/TPSGameplayTags.h"
+#include "GAS/Abilities/TPSGameplayAbility.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Log/TPSLog.h"
 #include "Logic/ITPSInteractionActorInterface.h"
@@ -27,6 +34,17 @@ ATPSCharacter::ATPSCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	// GAS — ASC / AttributeSet 서브오브젝트
+	AbilitySystemComponent = CreateDefaultSubobject<UTPSAbilitySystemComponent>( TEXT("AbilitySystemComponent") );
+	AbilitySystemComponent->SetIsReplicated( true );
+
+	AttributeSet = CreateDefaultSubobject<UTPSAttributeSet>( TEXT("AttributeSet") );
+}
+
+UAbilitySystemComponent* ATPSCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
 }
 
 // Called when the game starts or when spawned
@@ -81,8 +99,22 @@ void ATPSCharacter::BeginPlay()
 	{
 		capsuleComp->OnComponentBeginOverlap.AddDynamic( this, &ATPSCharacter::OnBeginOverlap );
 	}
-	
+
 	CurrentCameraComp = IsTPSMode ? TPSCameraComp : FPSCameraComp;
+
+	_InitAbilitySystem();
+}
+
+void ATPSCharacter::EndPlay( const EEndPlayReason::Type EndPlayReason )
+{
+	// 어트리뷰트 변경 구독 해제 (댕글링 방지)
+	if ( AttributeSet )
+	{
+		AttributeSet->OnHealthChanged.RemoveAll( this );
+		AttributeSet->OnStaminaChanged.RemoveAll( this );
+	}
+
+	Super::EndPlay( EndPlayReason );
 }
 
 // 무기를 줍는 상호작용을 실행한다.
@@ -224,6 +256,112 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	if ( UEnhancedInputComponent* eic = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )
+	{
+		if ( SprintAction )
+		{
+			eic->BindAction( SprintAction, ETriggerEvent::Started,   this, &ATPSCharacter::OnSprintPressed  );
+			eic->BindAction( SprintAction, ETriggerEvent::Completed, this, &ATPSCharacter::OnSprintReleased );
+			eic->BindAction( SprintAction, ETriggerEvent::Canceled,  this, &ATPSCharacter::OnSprintReleased );
+		}
+	}
+}
+
+void ATPSCharacter::OnSprintPressed( const FInputActionValue& /*Value*/ )
+{
+	if ( !AbilitySystemComponent ) return;
+	AbilitySystemComponent->TryActivateAbilityByTag( TAG_Ability_Sprint );
+}
+
+void ATPSCharacter::OnSprintReleased( const FInputActionValue& /*Value*/ )
+{
+	if ( !AbilitySystemComponent ) return;
+	AbilitySystemComponent->CancelAbilityByTag( TAG_Ability_Sprint );
+}
+
+void ATPSCharacter::_InitAbilitySystem()
+{
+	if ( !AbilitySystemComponent || !AttributeSet ) return;
+
+	// ASC ActorInfo 초기화 (Owner = Avatar = this; 단일 플레이어 전제)
+	AbilitySystemComponent->InitAbilityActorInfo( this, this );
+
+	// Health 변경 구독 (사망 트리거).
+	// AddUObject를 사용하여 EndPlay의 RemoveAll(this)와 정확히 매칭되도록 한다.
+	AttributeSet->OnHealthChanged.AddUObject( this, &ATPSCharacter::_HandleHealthChanged );
+
+	// 기본 GE (어트리뷰트 초기화) 적용
+	for ( const TSubclassOf<UGameplayEffect>& effectClass : DefaultEffects )
+	{
+		if ( !effectClass ) continue;
+
+		FGameplayEffectContextHandle ctx = AbilitySystemComponent->MakeEffectContext();
+		ctx.AddSourceObject( this );
+
+		const FGameplayEffectSpecHandle specHandle = AbilitySystemComponent->MakeOutgoingSpec( effectClass, 1.0f, ctx );
+		if ( specHandle.IsValid() )
+		{
+			AbilitySystemComponent->ApplyGameplayEffectSpecToSelf( *specHandle.Data.Get() );
+		}
+	}
+
+	// 기본 어빌리티 부여
+	for ( const TSubclassOf<UTPSGameplayAbility>& abilityClass : DefaultAbilities )
+	{
+		if ( !abilityClass ) continue;
+
+		AbilitySystemComponent->GiveAbility( FGameplayAbilitySpec( abilityClass, 1, INDEX_NONE, this ) );
+	}
+
+	UE_LOG( LogGameplay, Log, TEXT("[TPS] GAS Initialized — Health=%.1f / MaxHealth=%.1f, Stamina=%.1f / MaxStamina=%.1f"),
+		AttributeSet->GetHealth(),    AttributeSet->GetMaxHealth(),
+		AttributeSet->GetStamina(),   AttributeSet->GetMaxStamina() );
+}
+
+void ATPSCharacter::_HandleHealthChanged( float NewValue, float /*OldValue*/ )
+{
+	if ( NewValue <= 0.0f )
+	{
+		_HandleOnDeath();
+	}
+}
+
+void ATPSCharacter::_HandleOnDeath()
+{
+	// 이미 사망 태그가 있으면 중복 처리 방지
+	if ( AbilitySystemComponent && AbilitySystemComponent->HasMatchingGameplayTag( TAG_State_Dead ) )
+	{
+		return;
+	}
+
+	if ( AbilitySystemComponent )
+	{
+		// 사망 상태 태그 부여 (loose tag — GE 없이 즉시 부여)
+		AbilitySystemComponent->AddLooseGameplayTag( TAG_State_Dead );
+
+		// 활성 어빌리티 모두 취소
+		AbilitySystemComponent->CancelAllAbilities();
+	}
+
+	// 입력 비활성
+	if ( APlayerController* pc = GetController<APlayerController>() )
+	{
+		DisableInput( pc );
+	}
+
+	// 라그돌
+	if ( USkeletalMeshComponent* mesh = GetMesh() )
+	{
+		mesh->SetCollisionProfileName( TEXT("Ragdoll") );
+		mesh->SetSimulatePhysics( true );
+	}
+
+	// 5초 뒤 자동 정리
+	SetLifeSpan( 5.0f );
+
+	OnDeath.Broadcast();
+
+	UE_LOG( LogGameplay, Log, TEXT("[TPS] OnDeath Broadcast") );
 }
 
 // 오버랩이 시작되었음을 알리는 이벤트를 처리한다.

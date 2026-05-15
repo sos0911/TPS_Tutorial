@@ -2,6 +2,7 @@
 
 
 #include "GameInstance/TPSGameInstance.h"
+#include "AbilitySystemGlobals.h"
 #include "Log/TPSLog.h"
 #include "Manager/TPSDataManager.h"
 #include "Manager/TPSUIManager.h"
@@ -59,6 +60,9 @@ UTPSDataManager* UTPSGameInstance::GetDataManager() const
 void UTPSGameInstance::Init()
 {
 	Super::Init();
+
+	// GAS 글로벌 데이터 초기화 (TargetData 직렬화 등 일부 기능에 필수)
+	UAbilitySystemGlobals::Get().InitGlobalData();
 
 	UIManager = UTPSUIManager::Create( this );
 
