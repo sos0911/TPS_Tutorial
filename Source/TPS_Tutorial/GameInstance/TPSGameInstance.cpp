@@ -39,7 +39,7 @@ UTPSUIManager* UTPSGameInstance::GetUIManager() const
 {
 	if ( !UIManager )
 	{
-		UE_LOG( LogGameplay, Warning, TEXT("[TPS] UI Manager invalid" ) );
+		UE_LOG( LogGameplay, Warning, TEXT( "[TPS] UI Manager invalid" ) );
 	}
 
 	return UIManager;
@@ -50,7 +50,7 @@ UTPSDataManager* UTPSGameInstance::GetDataManager() const
 {
 	if ( !DataManager )
 	{
-		UE_LOG( LogGameplay, Warning, TEXT("[TPS] Data Manager invalid" ) );
+		UE_LOG( LogGameplay, Warning, TEXT( "[TPS] Data Manager invalid" ) );
 	}
 
 	return DataManager;

@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Notion__notion-search",
+      "mcp__claude_ai_Notion__notion-fetch",
+      "mcp__claude_ai_Notion__notion-create-pages",
+      "Bash(cd:*)",
+      "Bash(git:*)",
+      "mcp__mcp-registry__search_mcp_registry",
+      "Bash(xargs grep:*)",
+      "Bash(xargs:*)",
+      "Bash(python:*)",
+      "Bash(powershell:*)",
+      "mcp__confluence-jira__jira_get_issue",
+      "mcp__plugin_neo-mem_neo-mem__nm_ctx_execute_file",
+      "mcp__plugin_neo-mem_neo-mem__nm_ctx_execute"
+    ]
+  }
+}

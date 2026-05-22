@@ -36,27 +36,27 @@ struct FWeaponTableData : public FTableRowBase
 	GENERATED_BODY()
 
 	// WeaponName
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon Data" )
 	FName WeaponName = TEXT( "" );
 
 	// WeaponType
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon Data" )
 	EWeaponType WeaponType = EWeaponType::Max;
 
 	// Damage
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon Data" )
 	float Damage = 0.0f;
 
 	// MagazineSize
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon Data" )
 	int32 MagazineSize = 0;
 
 	// PickUpWeapon: BP Pick Up We 클래스를 참조 (APickUpActor의 자식 클래스)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon Data" )
 	TSubclassOf< class AActor > PickUpWeapon;
 
 	// EquipWeapon: BP Equip We 클래스를 참조 (AEquipActor의 자식 클래스)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon Data" )
 	TSubclassOf< class AActor > EquipWeapon;
 };
 
@@ -66,6 +66,6 @@ struct FStringTableData : public FTableRowBase
 	GENERATED_BODY()
 	
 	// StringValue
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "String Data")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "String Data" )
 	FString StringValue = TEXT( "" );
 };

@@ -19,11 +19,11 @@ class TPS_TUTORIAL_API ATPSPlayerCameraManager : public APlayerCameraManager
 
 protected:
 	// 머리 소켓 이름 (우선)
-	UPROPERTY(EditDefaultsOnly, Category = "TPS|Camera")
+	UPROPERTY( EditDefaultsOnly, Category = "TPS|Camera" )
 	FName HeadSocketNamePrimary = TEXT( "head" );
 
 	// 머리 소켓 이름 (대체)
-	UPROPERTY(EditDefaultsOnly, Category = "TPS|Camera")
+	UPROPERTY( EditDefaultsOnly, Category = "TPS|Camera" )
 	FName HeadSocketNameFallback = TEXT( "Head" );
 
 public:

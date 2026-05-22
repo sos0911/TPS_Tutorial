@@ -35,11 +35,11 @@ public:
 
 protected:
 	// Sprint 활성 동안 적용되는 Stamina 감소 GE (Duration, BP에서 지정)
-	UPROPERTY( EditDefaultsOnly, Category = "TPS|Sprint" )
-	TSubclassOf<UGameplayEffect> StaminaDrainEffect;
+	UPROPERTY( EditDefaultsOnly, Category = "GAS" )
+	TSubclassOf< UGameplayEffect > StaminaDrainEffect;
 
 	// 스프린트 이동 속도 (cm/s)
-	UPROPERTY( EditDefaultsOnly, Category = "TPS|Sprint" )
+	UPROPERTY( EditDefaultsOnly, Category = "GAS" )
 	float SprintSpeed = 1000.0f;
 
 	// 평상시 이동 속도 — EndAbility에서 원복

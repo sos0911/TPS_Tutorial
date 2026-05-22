@@ -26,7 +26,7 @@ void UTPSGameplayAbility_Fire::ActivateAbility(
 	}
 
 	// TODO: 추후 PR에서 ATPSCharacter::HandleFireWeaponInteract 본체를 이 어빌리티로 이동.
-	UE_LOG( LogGameplay, Log, TEXT("[TPS] GAS Fire Ability triggered (stub)") );
+	UE_LOG( LogGameplay, Log, TEXT( "[TPS] GAS Fire Ability triggered (stub)" ) );
 
 	EndAbility( Handle, ActorInfo, ActivationInfo, true, false );
 }

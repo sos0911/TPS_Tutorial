@@ -36,10 +36,10 @@ ATPSCharacter::ATPSCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// GAS — ASC / AttributeSet 서브오브젝트
-	AbilitySystemComponent = CreateDefaultSubobject<UTPSAbilitySystemComponent>( TEXT("AbilitySystemComponent") );
+	AbilitySystemComponent = CreateDefaultSubobject< UTPSAbilitySystemComponent >( TEXT( "AbilitySystemComponent" ) );
 	AbilitySystemComponent->SetIsReplicated( true );
 
-	AttributeSet = CreateDefaultSubobject<UTPSAttributeSet>( TEXT("AttributeSet") );
+	AttributeSet = CreateDefaultSubobject< UTPSAttributeSet >( TEXT( "AttributeSet" ) );
 }
 
 UAbilitySystemComponent* ATPSCharacter::GetAbilitySystemComponent() const
@@ -256,7 +256,7 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if ( UEnhancedInputComponent* eic = Cast<UEnhancedInputComponent>( PlayerInputComponent ) )
+	if ( UEnhancedInputComponent* eic = Cast< UEnhancedInputComponent >( PlayerInputComponent ) )
 	{
 		if ( SprintAction )
 		{
@@ -291,7 +291,7 @@ void ATPSCharacter::_InitAbilitySystem()
 	AttributeSet->OnHealthChanged.AddUObject( this, &ATPSCharacter::_HandleHealthChanged );
 
 	// 기본 GE (어트리뷰트 초기화) 적용
-	for ( const TSubclassOf<UGameplayEffect>& effectClass : DefaultEffects )
+	for ( const TSubclassOf< UGameplayEffect >& effectClass : DefaultEffects )
 	{
 		if ( !effectClass ) continue;
 
@@ -306,14 +306,14 @@ void ATPSCharacter::_InitAbilitySystem()
 	}
 
 	// 기본 어빌리티 부여
-	for ( const TSubclassOf<UTPSGameplayAbility>& abilityClass : DefaultAbilities )
+	for ( const TSubclassOf< UTPSGameplayAbility >& abilityClass : DefaultAbilities )
 	{
 		if ( !abilityClass ) continue;
 
 		AbilitySystemComponent->GiveAbility( FGameplayAbilitySpec( abilityClass, 1, INDEX_NONE, this ) );
 	}
 
-	UE_LOG( LogGameplay, Log, TEXT("[TPS] GAS Initialized — Health=%.1f / MaxHealth=%.1f, Stamina=%.1f / MaxStamina=%.1f"),
+	UE_LOG( LogGameplay, Log, TEXT( "[TPS] GAS Initialized — Health=%.1f / MaxHealth=%.1f, Stamina=%.1f / MaxStamina=%.1f" ),
 		AttributeSet->GetHealth(),    AttributeSet->GetMaxHealth(),
 		AttributeSet->GetStamina(),   AttributeSet->GetMaxStamina() );
 }
@@ -352,7 +352,7 @@ void ATPSCharacter::_HandleOnDeath()
 	// 라그돌
 	if ( USkeletalMeshComponent* mesh = GetMesh() )
 	{
-		mesh->SetCollisionProfileName( TEXT("Ragdoll") );
+		mesh->SetCollisionProfileName( TEXT( "Ragdoll" ) );
 		mesh->SetSimulatePhysics( true );
 	}
 
@@ -361,7 +361,7 @@ void ATPSCharacter::_HandleOnDeath()
 
 	OnDeath.Broadcast();
 
-	UE_LOG( LogGameplay, Log, TEXT("[TPS] OnDeath Broadcast") );
+	UE_LOG( LogGameplay, Log, TEXT( "[TPS] OnDeath Broadcast" ) );
 }
 
 // 오버랩이 시작되었음을 알리는 이벤트를 처리한다.
@@ -390,14 +390,14 @@ void ATPSCharacter::Move( const FInputActionValue& Value )
 {
 	if ( Value.GetValueType() != EInputActionValueType::Axis2D ) return;
 
-	UE_LOG( LogGameplay, Log, TEXT("move value : { %f %f }" ), Value.Get< FVector2D >().X, Value.Get< FVector2D >().Y );
+	UE_LOG( LogGameplay, Log, TEXT( "move value : { %f %f }" ), Value.Get< FVector2D >().X, Value.Get< FVector2D >().Y );
 
 	double xValue = Value.Get< FVector2D >().X;
 	double yValue = Value.Get< FVector2D >().Y;
 
 	FRotator rotator = GetControlRotation();
 	
-	UE_LOG( LogGameplay, Log, TEXT("rotate value : { %f %f }" ), rotator.Pitch, rotator.Yaw );
+	UE_LOG( LogGameplay, Log, TEXT( "rotate value : { %f %f }" ), rotator.Pitch, rotator.Yaw );
 	
 	// TODO : 아래 계산 공식에서 Roll 이 RightVector 뽑는 데 필요한가? wasd 모두 yaw 만 필요하지 않나 싶은데..
 	if ( FMath::Abs( xValue ) > 0 )

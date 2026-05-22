@@ -33,7 +33,7 @@ void UTPSGameplayAbility_Sprint::ActivateAbility(
 		return;
 	}
 
-	ACharacter* character = ActorInfo ? Cast<ACharacter>( ActorInfo->AvatarActor.Get() ) : nullptr;
+	ACharacter* character = ActorInfo ? Cast< ACharacter >( ActorInfo->AvatarActor.Get() ) : nullptr;
 	if ( !character )
 	{
 		EndAbility( Handle, ActorInfo, ActivationInfo, true, true );
@@ -67,7 +67,7 @@ void UTPSGameplayAbility_Sprint::ActivateAbility(
 		}
 	}
 
-	UE_LOG( LogGameplay, Log, TEXT("[TPS] GAS Sprint Activated") );
+	UE_LOG( LogGameplay, Log, TEXT( "[TPS] GAS Sprint Activated" ) );
 }
 
 void UTPSGameplayAbility_Sprint::EndAbility(
@@ -88,7 +88,7 @@ void UTPSGameplayAbility_Sprint::EndAbility(
 	}
 
 	// 이동 속도 원복
-	if ( ACharacter* character = ActorInfo ? Cast<ACharacter>( ActorInfo->AvatarActor.Get() ) : nullptr )
+	if ( ACharacter* character = ActorInfo ? Cast< ACharacter >( ActorInfo->AvatarActor.Get() ) : nullptr )
 	{
 		if ( UCharacterMovementComponent* moveComp = character->GetCharacterMovement() )
 		{
@@ -96,7 +96,7 @@ void UTPSGameplayAbility_Sprint::EndAbility(
 		}
 	}
 
-	UE_LOG( LogGameplay, Log, TEXT("[TPS] GAS Sprint Ended (cancelled=%d)"), bWasCancelled ? 1 : 0 );
+	UE_LOG( LogGameplay, Log, TEXT( "[TPS] GAS Sprint Ended (cancelled=%d)" ), bWasCancelled ? 1 : 0 );
 
 	Super::EndAbility( Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled );
 }

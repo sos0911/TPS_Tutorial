@@ -5,8 +5,8 @@
 
 
 #include "CoreMinimal.h"
-#include "AttributeSet.h"
 #include "AbilitySystemComponent.h"
+#include "AttributeSet.h"
 #include "TPSAttributeSet.generated.h"
 
 

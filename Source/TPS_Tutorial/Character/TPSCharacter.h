@@ -36,56 +36,56 @@ class TPS_TUTORIAL_API ATPSCharacter : public ACharacter, public IAbilitySystemI
 
 protected:
 	// 이동 IA
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UInputAction> MoveAction;
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input" )
+	TObjectPtr< UInputAction > MoveAction;
 
 	// pitch 회전값
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input" )
 	float Pitch = 0.0f;  
 
 	// Roll 값
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input" )
 	float Roll = 0.0f;
 
 	// TPS 모드인가 여부
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input" )
 	bool IsTPSMode = true;
 
 	// zoom 모드인가 여부
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input" )
 	bool IsZoomMode = false;
 
 	// 현재 무기 타입
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "State" )
 	EWeaponType CurrentWeaponType = EWeaponType::Max;
 
 	// 현재 무기 발사 중인가 여부
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "State" )
 	bool IsFiring = false;
 
 	// 현재 어느 방향으로 이동 중인지?
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "State" )
 	ECharacterMoveDirection MovingDirection = ECharacterMoveDirection::Max;
 
 	// GAS — 어빌리티 시스템 컴포넌트
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "GAS" )
-	TObjectPtr<UTPSAbilitySystemComponent> AbilitySystemComponent;
+	TObjectPtr< UTPSAbilitySystemComponent > AbilitySystemComponent;
 
 	// GAS — 어트리뷰트 세트
 	UPROPERTY()
-	TObjectPtr<UTPSAttributeSet> AttributeSet;
+	TObjectPtr< UTPSAttributeSet > AttributeSet;
 
 	// 캐릭터 스폰 시 부여되는 기본 어빌리티 목록
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "GAS" )
-	TArray< TSubclassOf<UTPSGameplayAbility> > DefaultAbilities;
+	TArray< TSubclassOf< UTPSGameplayAbility > > DefaultAbilities;
 
 	// 캐릭터 스폰 시 적용되는 기본 GE 목록 (예: 어트리뷰트 초기화)
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "GAS" )
-	TArray< TSubclassOf<UGameplayEffect> > DefaultEffects;
+	TArray< TSubclassOf< UGameplayEffect > > DefaultEffects;
 
 	// Sprint 입력 액션
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input" )
-	TObjectPtr<UInputAction> SprintAction;
+	TObjectPtr< UInputAction > SprintAction;
 
 	// 사망 멀티캐스트 델리게이트
 	UPROPERTY( BlueprintAssignable, Category = "GAS" )
@@ -100,9 +100,9 @@ private:
 	};
 
 private:
-	const FString TPSCameraCompName     = TEXT( "TPSCamera"     ); // TPS 카메라 컴포넌트 이름
+	const FString TPSCameraCompName     = TEXT( "TPSCamera" ); // TPS 카메라 컴포넌트 이름
 	const FString TPSZoomCameraCompName = TEXT( "TPSZoomCamera" ); // TPS 줌 카메라 컴포넌트 이름
-	const FString FPSCameraCompName     = TEXT( "FPSCamera"     ); // FPS 카메라 컴포넌트 이름
+	const FString FPSCameraCompName     = TEXT( "FPSCamera" ); // FPS 카메라 컴포넌트 이름
 
 	UChildActorComponent*   TPSCameraComp     = nullptr; // TPS 카메라 컴포넌트 객체
 	UChildActorComponent*   TPSZoomCameraComp = nullptr; // TPS 줌 카메라 컴포넌트 객체
