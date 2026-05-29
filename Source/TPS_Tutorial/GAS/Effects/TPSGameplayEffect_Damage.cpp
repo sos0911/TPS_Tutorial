@@ -7,6 +7,7 @@
 #include "GAS/TPSGameplayTags.h"
 
 
+// Instant 데미지 GE의 Health SetByCaller 모디파이어를 구성한다.
 UTPSGameplayEffect_Damage::UTPSGameplayEffect_Damage()
 {
 	// Instant: 즉시 BaseValue를 변경
@@ -27,6 +28,7 @@ UTPSGameplayEffect_Damage::UTPSGameplayEffect_Damage()
 	Modifiers.Add( modifier );
 }
 
+// 양수 데미지를 음수로 변환해 대상에게 데미지 GE를 적용한다.
 FActiveGameplayEffectHandle UTPSGameplayEffect_Damage::ApplyDamage(
 	UAbilitySystemComponent* Target,
 	UAbilitySystemComponent* Source,

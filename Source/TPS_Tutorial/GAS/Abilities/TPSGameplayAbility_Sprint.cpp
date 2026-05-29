@@ -9,6 +9,7 @@
 #include "Log/TPSLog.h"
 
 
+// Sprint 어빌리티 태그와 상태/차단 태그를 설정한다.
 UTPSGameplayAbility_Sprint::UTPSGameplayAbility_Sprint()
 {
 	// 어빌리티 자체에 부여되는 식별 태그
@@ -21,6 +22,7 @@ UTPSGameplayAbility_Sprint::UTPSGameplayAbility_Sprint()
 	ActivationBlockedTags.AddTag( TAG_State_Dead );
 }
 
+// 이동 속도를 스프린트 속도로 올리고 스태미나 드레인 GE를 적용한다.
 void UTPSGameplayAbility_Sprint::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,
@@ -70,6 +72,7 @@ void UTPSGameplayAbility_Sprint::ActivateAbility(
 	UE_LOG( LogGameplay, Log, TEXT( "[TPS] GAS Sprint Activated" ) );
 }
 
+// 스태미나 드레인 GE를 제거하고 이동 속도를 원복한다.
 void UTPSGameplayAbility_Sprint::EndAbility(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,

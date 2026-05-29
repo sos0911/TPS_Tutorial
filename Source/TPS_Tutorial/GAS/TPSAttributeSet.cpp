@@ -5,6 +5,7 @@
 #include "GameplayEffectExtension.h"
 
 
+// 어트리뷰트 디폴트 초기값을 설정한다.
 UTPSAttributeSet::UTPSAttributeSet()
 {
 	// 디폴트 초기값 — 캐릭터 BP에서 InitAttributes GE로 다시 세팅
@@ -14,6 +15,7 @@ UTPSAttributeSet::UTPSAttributeSet()
 	InitMaxStamina ( 100.0f );
 }
 
+// 어트리뷰트 값 변경 직전에 범위를 클램프한다.
 void UTPSAttributeSet::PreAttributeChange( const FGameplayAttribute& Attribute, float& NewValue )
 {
 	Super::PreAttributeChange( Attribute, NewValue );
@@ -47,6 +49,7 @@ void UTPSAttributeSet::PreAttributeChange( const FGameplayAttribute& Attribute, 
 	}
 }
 
+// GE 적용 후 값을 클램프하고 변경 델리게이트를 브로드캐스트한다.
 void UTPSAttributeSet::PostGameplayEffectExecute( const FGameplayEffectModCallbackData& Data )
 {
 	Super::PostGameplayEffectExecute( Data );

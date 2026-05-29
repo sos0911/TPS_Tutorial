@@ -6,6 +6,7 @@
 #include "Log/TPSLog.h"
 
 
+// Fire 어빌리티 태그와 활성화 차단 태그를 설정한다.
 UTPSGameplayAbility_Fire::UTPSGameplayAbility_Fire()
 {
 	AbilityTags.AddTag( TAG_Ability_Fire );
@@ -13,6 +14,7 @@ UTPSGameplayAbility_Fire::UTPSGameplayAbility_Fire()
 	ActivationBlockedTags.AddTag( TAG_State_Dead );
 }
 
+// 어빌리티를 커밋하고 발사 처리를 수행한다 (현재는 스텁).
 void UTPSGameplayAbility_Fire::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,

@@ -17,7 +17,8 @@
 - [ ] 함수/클래스 `{`는 **새 줄** (Allman). 단, BP 바인딩·구조 리터럴 등 짧은 컨텍스트는 인라인 허용 — §3.4
 - [ ] **멤버 변수 = PascalCase**, **로컬 변수 = camelCase**, **private 메서드 = `_PascalCase` (언더스코어 접두)** — §2.3 / §2.4 / §2.5
 - [ ] 클래스/파일 모두 `TPS` 프로젝트 접두 (UE prefix 뒤에): `ATPSCharacter`, `UTPSGameInstance`, `FTPS...` X — 단순히 `F` + 도메인명도 허용 (`FWeaponTableData`). §2.1
-- [ ] 함수/멤버 위에 **한국어 한 줄 주석** (`// ~한다.` 종결) — §6.1
+- [ ] 함수/멤버 **선언부**(`.h`) 위에 **한국어 한 줄 주석** (`// ~한다.` 종결) — §6.1
+- [ ] 함수 **정의부**(`.cpp`) 위에도 **한국어 한 줄 주석** 1줄 필수 (선언부 주석과 별개로 정의 바로 위에) — §6.1
 - [ ] 모든 `UPROPERTY`에 **`Category=` 명시** — §4.2
 - [ ] 로그는 `LogGameplay` 카테고리 + `[TPS]` 프리픽스 — §7
 - [ ] `#include` 순서: `CoreMinimal.h` → 엔진/플러그인 → 프로젝트(알파벳) → `*.generated.h` 마지막 — §5
@@ -356,6 +357,28 @@ void _ToggleHUDUI( const bool bOn );
 
 - 의문문/명사형 종결(`~함`) 금지. 항상 평서·서술 `한다.` 끝맺음.
 - 명백한 getter (`GetX()`)도 짧게 한 줄 붙이는 것이 본 프로젝트 표준.
+
+### 6.1.1 정의부(.cpp) 주석 — 함수 추가 시 필수 (⚠ 중요)
+
+`.h` 선언부 주석과 **별개로**, `.cpp` 함수 정의 **바로 위 한 줄**에도 한국어 주석을 단다. 새 함수를 추가하거나 기존 함수를 이전할 때 정의부 주석 누락은 컨벤션 위반이다.
+
+```cpp
+// 어빌리티 태그로 어빌리티 활성화를 시도한다.
+bool UTPSAbilitySystemComponent::TryActivateAbilityByTag( const FGameplayTag& AbilityTag )
+{
+    ...
+}
+
+// 어빌리티 태그에 해당하는 활성 어빌리티를 취소한다.
+void UTPSAbilitySystemComponent::CancelAbilityByTag( const FGameplayTag& AbilityTag )
+{
+    ...
+}
+```
+
+- 생성자/소멸자/오버라이드 함수도 예외 없이 정의 위 한 줄 주석.
+- 함수 **본문 안쪽**의 단계별 주석(`// 평상시 속도 캐시 후 ...`)은 정의부 주석을 대체하지 않는다. 본문 주석이 있어도 정의 바로 위 한 줄은 별도로 둔다.
+- 선언부 주석과 동일 문장을 재사용해도 무방하나, 정의부에서는 구현 관점의 설명이면 더 좋다.
 
 ### 6.2 멤버 인라인 주석
 
