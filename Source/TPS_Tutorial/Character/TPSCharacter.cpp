@@ -29,7 +29,7 @@
 #include "Util/TPSUtil.h"
 
 
-// Sets default values
+// 캐릭터 기본값과 GAS 서브오브젝트(ASC/AttributeSet)를 생성한다.
 ATPSCharacter::ATPSCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -42,12 +42,13 @@ ATPSCharacter::ATPSCharacter()
 	AttributeSet = CreateDefaultSubobject< UTPSAttributeSet >( TEXT( "AttributeSet" ) );
 }
 
+// ASC를 반환한다 (IAbilitySystemInterface 구현).
 UAbilitySystemComponent* ATPSCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
 }
 
-// Called when the game starts or when spawned
+// 게임 시작/스폰 시 컴포넌트를 캐싱하고 GAS를 초기화한다.
 void ATPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -105,6 +106,7 @@ void ATPSCharacter::BeginPlay()
 	_InitAbilitySystem();
 }
 
+// 종료 시 어트리뷰트 변경 구독을 해제한다 (댕글링 방지).
 void ATPSCharacter::EndPlay( const EEndPlayReason::Type EndPlayReason )
 {
 	// 어트리뷰트 변경 구독 해제 (댕글링 방지)
@@ -234,7 +236,7 @@ void ATPSCharacter::_ToggleHUDUI( const bool bOn )
 	hudUI->ToggleCrosshair( bOn );
 }
 
-// Called every frame
+// 매 프레임 기울이기(Roll)와 점프 상태를 갱신한다.
 void ATPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -251,7 +253,7 @@ void ATPSCharacter::Tick(float DeltaTime)
 	if ( IsJumping && GetCharacterMovement() && !GetCharacterMovement()->IsFalling() ) IsJumping = false;
 }
 
-// Called to bind functionality to input
+// 입력 액션에 콜백을 바인딩한다.
 void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -267,18 +269,21 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	}
 }
 
+// 스프린트 입력 시작 시 Sprint 어빌리티를 활성화한다.
 void ATPSCharacter::OnSprintPressed( const FInputActionValue& /*Value*/ )
 {
 	if ( !AbilitySystemComponent ) return;
 	AbilitySystemComponent->TryActivateAbilityByTag( TAG_Ability_Sprint );
 }
 
+// 스프린트 입력 해제 시 Sprint 어빌리티를 취소한다.
 void ATPSCharacter::OnSprintReleased( const FInputActionValue& /*Value*/ )
 {
 	if ( !AbilitySystemComponent ) return;
 	AbilitySystemComponent->CancelAbilityByTag( TAG_Ability_Sprint );
 }
 
+// ASC ActorInfo를 초기화하고 기본 GE와 어빌리티를 부여한다.
 void ATPSCharacter::_InitAbilitySystem()
 {
 	if ( !AbilitySystemComponent || !AttributeSet ) return;
@@ -318,6 +323,7 @@ void ATPSCharacter::_InitAbilitySystem()
 		AttributeSet->GetStamina(),   AttributeSet->GetMaxStamina() );
 }
 
+// 체력 변경을 받아 0 이하이면 사망 처리한다.
 void ATPSCharacter::_HandleHealthChanged( float NewValue, float /*OldValue*/ )
 {
 	if ( NewValue <= 0.0f )
@@ -326,6 +332,7 @@ void ATPSCharacter::_HandleHealthChanged( float NewValue, float /*OldValue*/ )
 	}
 }
 
+// 사망 태그 부여, 어빌리티 취소, 입력 차단, 라그돌 처리를 한다.
 void ATPSCharacter::_HandleOnDeath()
 {
 	// 이미 사망 태그가 있으면 중복 처리 방지
