@@ -21,7 +21,7 @@ class UChildActorComponent;
 class USkeletalMeshComponent;
 class UTPSAbilitySystemComponent;
 class UTPSAttributeSet;
-class UTPSGameplayAbility;
+class UTPSGameplayAbilityBase;
 struct FInputActionValue;
 
 
@@ -77,7 +77,7 @@ protected:
 
 	// 캐릭터 스폰 시 부여되는 기본 어빌리티 목록
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "GAS" )
-	TArray< TSubclassOf< UTPSGameplayAbility > > DefaultAbilities;
+	TArray< TSubclassOf< UTPSGameplayAbilityBase > > DefaultAbilities;
 
 	// 캐릭터 스폰 시 적용되는 기본 GE 목록 (예: 어트리뷰트 초기화)
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "GAS" )

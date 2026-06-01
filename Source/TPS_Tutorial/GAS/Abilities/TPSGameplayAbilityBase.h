@@ -6,14 +6,14 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
-#include "TPSGameplayAbility.generated.h"
+#include "TPSGameplayAbilityBase.generated.h"
 
 
 UCLASS( Abstract )
-class TPS_TUTORIAL_API UTPSGameplayAbility : public UGameplayAbility
+class TPS_TUTORIAL_API UTPSGameplayAbilityBase : public UGameplayAbility
 {
 	GENERATED_BODY()
 
 public:
-	UTPSGameplayAbility();
+	UTPSGameplayAbilityBase();
 };

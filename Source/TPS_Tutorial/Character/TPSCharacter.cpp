@@ -19,7 +19,7 @@
 #include "GAS/TPSAbilitySystemComponent.h"
 #include "GAS/TPSAttributeSet.h"
 #include "GAS/TPSGameplayTags.h"
-#include "GAS/Abilities/TPSGameplayAbility.h"
+#include "GAS/Abilities/TPSGameplayAbilityBase.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Log/TPSLog.h"
 #include "Logic/ITPSInteractionActorInterface.h"
@@ -311,7 +311,7 @@ void ATPSCharacter::_InitAbilitySystem()
 	}
 
 	// 기본 어빌리티 부여
-	for ( const TSubclassOf< UTPSGameplayAbility >& abilityClass : DefaultAbilities )
+	for ( const TSubclassOf< UTPSGameplayAbilityBase >& abilityClass : DefaultAbilities )
 	{
 		if ( !abilityClass ) continue;
 

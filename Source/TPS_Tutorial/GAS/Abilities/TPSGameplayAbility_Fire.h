@@ -5,12 +5,12 @@
 
 
 #include "CoreMinimal.h"
-#include "GAS/Abilities/TPSGameplayAbility.h"
+#include "GAS/Abilities/TPSGameplayAbilityBase.h"
 #include "TPSGameplayAbility_Fire.generated.h"
 
 
 UCLASS()
-class TPS_TUTORIAL_API UTPSGameplayAbility_Fire : public UTPSGameplayAbility
+class TPS_TUTORIAL_API UTPSGameplayAbility_Fire : public UTPSGameplayAbilityBase
 {
 	GENERATED_BODY()
 

@@ -5,7 +5,7 @@
 
 
 #include "CoreMinimal.h"
-#include "GAS/Abilities/TPSGameplayAbility.h"
+#include "GAS/Abilities/TPSGameplayAbilityBase.h"
 #include "TPSGameplayAbility_Sprint.generated.h"
 
 
@@ -13,7 +13,7 @@ class UGameplayEffect;
 
 
 UCLASS()
-class TPS_TUTORIAL_API UTPSGameplayAbility_Sprint : public UTPSGameplayAbility
+class TPS_TUTORIAL_API UTPSGameplayAbility_Sprint : public UTPSGameplayAbilityBase
 {
 	GENERATED_BODY()
 
