@@ -19,7 +19,7 @@
 
 
 // 어트리뷰트 변경 시 브로드캐스트되는 델리게이트 (NewValue, OldValue)
-DECLARE_MULTICAST_DELEGATE_TwoParams( FOnAttributeValueChanged, float /*NewValue*/, float /*OldValue*/ );
+DECLARE_MULTICAST_DELEGATE_ThreeParams( FOnAttributeValueChanged, float /*NewValue*/, float /*MaxValue*/, float /*OldValue*/ );
 
 
 UCLASS()

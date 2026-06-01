@@ -21,6 +21,7 @@ class UChildActorComponent;
 class USkeletalMeshComponent;
 class UTPSAbilitySystemComponent;
 class UTPSAttributeSet;
+class UTPSHUD;
 class UTPSGameplayAbilityBase;
 struct FInputActionValue;
 
@@ -205,11 +206,17 @@ private:
 	// HUD UI를 토글한다.
 	void _ToggleHUDUI( const bool bOn );
 
+	// 현재 HUD 위젯을 반환한다. (없으면 nullptr)
+	UTPSHUD* _GetHUDUI() const;
+
 	// GAS — ASC ActorInfo 초기화 + 기본 어빌리티/GE 부여
 	void _InitAbilitySystem();
 
 	// GAS — Health 변경 핸들러 (사망 트리거)
-	void _HandleHealthChanged( float NewValue, float OldValue );
+	void _HandleHealthChanged( float NewValue, float MaxValue, float OldValue );
+
+	// GAS — Stamina 변경 핸들러 (HUD 스태미너 바 갱신)
+	void _HandleStaminaChanged( float NewValue, float MaxValue, float OldValue );
 
 	// GAS — 사망 처리 (라그돌, 입력 비활성)
 	void _HandleOnDeath();

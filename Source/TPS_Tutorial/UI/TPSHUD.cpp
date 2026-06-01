@@ -8,6 +8,7 @@
 #include "Manager/TPSUIManager.h"
 #include "Util/TPSUtil.h"
 #include "Util/TPSUtilWidget.h"
+#include <Components/ProgressBar.h>
 #include <Components/WidgetSwitcher.h>
 
 
@@ -29,10 +30,25 @@ FString UTPSHUD::GetFilePath()
 	return TEXT( "/Game/CustomContents/UI/WBP_TPSHUD.WBP_TPSHUD" );
 }
 
+// 초기화한다.
+void UTPSHUD::Init()
+{
+	SetStaminaPercent( 1.0f );
+	Refresh( false, EWeaponType::None, 0 );
+}
+
 // 크로스헤어 가시성을 토글한다.
 void UTPSHUD::ToggleCrosshair( const bool bOn ) const
 {
 	TPSUtilWidget::SetVisibility( CrossHairPanel, bOn ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed );
+}
+
+// 스태미너 프로그래스 바를 갱신한다.
+void UTPSHUD::SetStaminaPercent( const float Percent ) const
+{
+	if ( !ProgressBarStamina ) return;
+
+	ProgressBarStamina->SetPercent( FMath::Clamp( Percent, 0.0f, 1.0f ) );
 }
 
 // 갱신한다.

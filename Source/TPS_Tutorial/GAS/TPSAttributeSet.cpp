@@ -65,7 +65,7 @@ void UTPSAttributeSet::PostGameplayEffectExecute( const FGameplayEffectModCallba
 		const float clamped = FMath::Clamp( newValue, 0.0f, GetMaxHealth() );
 		SetHealth( clamped );
 
-		OnHealthChanged.Broadcast( clamped, oldValue );
+		OnHealthChanged.Broadcast( clamped, GetMaxHealth(), oldValue );
 	}
 	else if ( attribute == GetStaminaAttribute() )
 	{
@@ -75,6 +75,6 @@ void UTPSAttributeSet::PostGameplayEffectExecute( const FGameplayEffectModCallba
 		const float clamped = FMath::Clamp( newValue, 0.0f, GetMaxStamina() );
 		SetStamina( clamped );
 
-		OnStaminaChanged.Broadcast( clamped, oldValue );
+		OnStaminaChanged.Broadcast( clamped, GetMaxStamina(), oldValue );
 	}
 }

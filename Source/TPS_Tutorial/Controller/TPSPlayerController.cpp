@@ -16,6 +16,9 @@ void ATPSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UTPSHUD::Create();
+	UTPSHUD* hud = UTPSHUD::Create();
+	if ( !hud ) return;
+	
+	hud->Init();
 }
 

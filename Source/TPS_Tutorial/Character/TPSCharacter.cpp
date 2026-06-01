@@ -224,16 +224,22 @@ void ATPSCharacter::_AddControllerInput( const ERotationType RotationType, const
 // HUD UI를 토글한다.
 void ATPSCharacter::_ToggleHUDUI( const bool bOn )
 {
-	UTPSGameInstance* gameInstance = UTPSGameInstance::GetGameInstance();
-	if ( !gameInstance ) return;
-
-	UTPSUIManager* uiManager = gameInstance->GetUIManager();
-	if ( !uiManager ) return;
-
-	UTPSHUD* hudUI = Cast< UTPSHUD >( uiManager->FindWidget( UTPSHUD::StaticClass() ) );
+	UTPSHUD* hudUI = _GetHUDUI();
 	if ( !hudUI ) return;
 
 	hudUI->ToggleCrosshair( bOn );
+}
+
+// 현재 HUD 위젯을 반환한다.
+UTPSHUD* ATPSCharacter::_GetHUDUI() const
+{
+	UTPSGameInstance* gameInstance = UTPSGameInstance::GetGameInstance();
+	if ( !gameInstance ) return nullptr;
+
+	UTPSUIManager* uiManager = gameInstance->GetUIManager();
+	if ( !uiManager ) return nullptr;
+
+	return Cast< UTPSHUD >( uiManager->FindWidget( UTPSHUD::StaticClass() ) );
 }
 
 // 매 프레임 기울이기(Roll)와 점프 상태를 갱신한다.
@@ -295,6 +301,9 @@ void ATPSCharacter::_InitAbilitySystem()
 	// AddUObject를 사용하여 EndPlay의 RemoveAll(this)와 정확히 매칭되도록 한다.
 	AttributeSet->OnHealthChanged.AddUObject( this, &ATPSCharacter::_HandleHealthChanged );
 
+	// Stamina 변경 구독 (HUD 스태미너 바 갱신).
+	AttributeSet->OnStaminaChanged.AddUObject( this, &ATPSCharacter::_HandleStaminaChanged );
+
 	// 기본 GE (어트리뷰트 초기화) 적용
 	for ( const TSubclassOf< UGameplayEffect >& effectClass : DefaultEffects )
 	{
@@ -324,11 +333,24 @@ void ATPSCharacter::_InitAbilitySystem()
 }
 
 // 체력 변경을 받아 0 이하이면 사망 처리한다.
-void ATPSCharacter::_HandleHealthChanged( float NewValue, float /*OldValue*/ )
+void ATPSCharacter::_HandleHealthChanged( float NewValue, float MaxValue, float /*OldValue*/ )
 {
 	if ( NewValue <= 0.0f )
 	{
 		_HandleOnDeath();
+	}
+}
+
+// 스태미나 변경을 받아 HUD 스태미너 바를 갱신한다.
+void ATPSCharacter::_HandleStaminaChanged( float NewValue, float MaxValue, float /*OldValue*/ )
+{
+	if ( !AttributeSet ) return;
+
+	const float percent = MaxValue > KINDA_SMALL_NUMBER ? NewValue / MaxValue : 0.0f;
+
+	if ( UTPSHUD* hudUI = _GetHUDUI() )
+	{
+		hudUI->SetStaminaPercent( percent );
 	}
 }
 
