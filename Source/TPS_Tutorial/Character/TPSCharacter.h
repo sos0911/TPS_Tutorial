@@ -92,6 +92,14 @@ protected:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input" )
 	TObjectPtr< UInputAction > SprintAction;
 
+	// 재장전 입력 액션
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input" )
+	TObjectPtr< UInputAction > ReloadAction;
+
+	// 재장전 소요 시간(초)
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Weapon" )
+	float ReloadTime = 1.5f;
+
 	// 사망 멀티캐스트 델리게이트
 	UPROPERTY( BlueprintAssignable, Category = "GAS" )
 	FOnTPSCharacterDeath OnDeath;
@@ -118,10 +126,14 @@ private:
 	UChildActorComponent*   CurrentCameraComp = nullptr; // 현재 사용 중인 카메라 컴포넌트 객체
 	TPSActorPtr				CurrentWeapon	  = nullptr; // 현재 장착중인 무기 객체
 
-	bool IsLeaning  = false; // 기울이고 있는가 여부
-	bool IsJumping  = false; // 점프하고 있는가 여부
+	bool IsLeaning                  = false; // 기울이고 있는가 여부
+	bool IsJumping                  = false; // 점프하고 있는가 여부
 
-	float TargetRollValue = 0.0f; // 목표 기울이기 값
+	float TargetRollValue           = 0.0f;  // 목표 기울이기 값
+
+	int32 CurrentBullet             = 0;     // 현재 장착 무기의 잔여 장탄수
+	bool  IsReloading               = false; // 재장전 진행 중인가 여부
+	FTimerHandle ReloadTimerHandle;          // 재장전 완료 타이머 핸들
 
 public:
 	// 현재 Lean Roll 값을 반환한다.
@@ -172,8 +184,8 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaTime ) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent( class UInputComponent* PlayerInputComponent ) override;
+	// // Called to bind functionality to input
+	// virtual void SetupPlayerInputComponent( class UInputComponent* PlayerInputComponent ) override;
 
 	// IAbilitySystemInterface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -203,6 +215,10 @@ protected:
 	UFUNCTION( BlueprintCallable, Category = "GAS" )
 	void OnSprintReleased( const FInputActionValue& Value );
 
+	// 재장전 입력 처리 (Started)
+	UFUNCTION( BlueprintCallable, Category = "Weapon" )
+	void OnReload( const FInputActionValue& Value );
+
 private:
 	// 컨트롤러 인풋을 더한다.
 	void _AddControllerInput( const ERotationType RotationType, const float Value );
@@ -212,6 +228,12 @@ private:
 
 	// 현재 HUD 위젯을 반환한다. (없으면 nullptr)
 	UTPSHUD* _GetHUDUI() const;
+
+	// 현재 무기 타입/장탄수를 HUD에 동기화한다.
+	void _RefreshWeaponHUD() const;
+
+	// 재장전을 완료한다 (탄창 보충 + 상태 해제 + HUD 동기화).
+	void _FinishReload();
 
 	// GAS — ASC ActorInfo 초기화 + 기본 어빌리티/GE 부여
 	void _InitAbilitySystem();

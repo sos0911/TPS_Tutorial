@@ -51,13 +51,11 @@ void UTPSHUD::SetStaminaPercent( const float Percent ) const
 	ProgressBarStamina->SetPercent( FMath::Clamp( Percent, 0.0f, 1.0f ) );
 }
 
-// 갱신한다.
-void UTPSHUD::Refresh( const bool bAim, const EWeaponType WeaponType, const int32 LeftBullet ) const
+// 무기 상태 스위쳐와 장탄수 텍스트를 갱신한다. (크로스헤어 비관여)
+void UTPSHUD::RefreshWeaponInfo( const EWeaponType WeaponType, const int32 LeftBullet ) const
 {
-	if ( !CrossHairPanel      ) return;
 	if ( !SwitcherWeaponState ) return;
 
-	TPSUtilWidget::SetVisibility( CrossHairPanel, bAim ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed );
 	SwitcherWeaponState->SetActiveWidgetIndex( WeaponType == EWeaponType::None ? static_cast< int32 >( EWeaponState::Empty ) : static_cast< int32 >( EWeaponState::Gun ) );
 
 	// NOTE : Character actor 찾아서 datacomponent 참조해도 되나, 일단 EWeaponType 인자로 찾아본다.
@@ -66,14 +64,32 @@ void UTPSHUD::Refresh( const bool bAim, const EWeaponType WeaponType, const int3
 	if ( UTPSDataManager* dataManager = GetTPSDataManager() )
 	{
 		const FStringTableData* stringData = dataManager->FindRow< FStringTableData >( TEXT( "DT_String" ), TEXT( "BULLET_DESCRIPTION" )     );
-		const FWeaponTableData* weaponData = dataManager->FindRow< FWeaponTableData >( TEXT( "DT_Weapon" ), *TPSUtil::ToString( WeaponType ) );
-		if ( stringData && weaponData )
+		const FWeaponTableData* weaponData = dataManager->FindRow< FWeaponTableData >( TEXT( "DT_Weapon"  ), *TPSUtil::ToString( WeaponType ) );
+		if ( stringData )
 		{
 			FString resText = stringData->StringValue;
-			resText = resText.Replace( TEXT( "[LeftValue]" ), *TPSUtil::ToString( LeftBullet               ) );
-			resText = resText.Replace( TEXT( "[AllValue]"  ), *TPSUtil::ToString( weaponData->MagazineSize ) );
+			if ( weaponData )
+			{
+				resText = resText.Replace( TEXT( "[LeftValue]" ), *TPSUtil::ToString( LeftBullet               ) );
+				resText = resText.Replace( TEXT( "[AllValue]"  ), *TPSUtil::ToString( weaponData->MagazineSize ) );	
+			}
+			else
+			{
+				resText = resText.Replace( TEXT( "[LeftValue]" ), *TPSUtil::ToString( 0 ) );
+				resText = resText.Replace( TEXT( "[AllValue]"  ), *TPSUtil::ToString( 0 ) );
+			}
 
 			TPSUtilWidget::SetText( TextBullet, resText );
 		}
 	}
+}
+
+// 갱신한다.
+void UTPSHUD::Refresh( const bool bAim, const EWeaponType WeaponType, const int32 LeftBullet ) const
+{
+	if ( !CrossHairPanel ) return;
+
+	TPSUtilWidget::SetVisibility( CrossHairPanel, bAim ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed );
+
+	RefreshWeaponInfo( WeaponType, LeftBullet );
 }

@@ -57,6 +57,9 @@ public:
 	// 스태미너 프로그래스 바를 갱신한다. (Percent: 0.0 ~ 1.0)
 	void SetStaminaPercent( const float Percent ) const;
 
+	// 무기 정보(무기 상태 스위쳐 + 장탄수 텍스트)를 갱신한다. (크로스헤어는 건드리지 않음)
+	void RefreshWeaponInfo( const EWeaponType WeaponType, const int32 LeftBullet ) const;
+
 	// 갱신한다.
 	void Refresh( const bool bAim, const EWeaponType WeaponType, const int32 LeftBullet ) const;
 };

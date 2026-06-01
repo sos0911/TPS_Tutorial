@@ -200,7 +200,12 @@ bool ATPSCharacter::HandlePickUpWeaponInteract( AActor* OtherActor )
 	CurrentWeapon = weapon;
 	CurrentWeaponType = weaponData->WeaponType;
 
+	// 장착 시 탄창을 가득 채우고 HUD 장탄수를 동기화한다.
+	CurrentBullet = weaponData->MagazineSize;
+
 	if ( IsTPSMode || !IsZoomMode ) _ToggleHUDUI( true );
+
+	_RefreshWeaponHUD();
 
 	return true;
 }
@@ -263,21 +268,26 @@ void ATPSCharacter::Tick( float DeltaTime )
 	if ( IsJumping && GetCharacterMovement() && !GetCharacterMovement()->IsFalling() ) IsJumping = false;
 }
 
-// 입력 액션에 콜백을 바인딩한다.
-void ATPSCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputComponent )
-{
-	Super::SetupPlayerInputComponent( PlayerInputComponent );
-
-	if ( UEnhancedInputComponent* eic = Cast< UEnhancedInputComponent >( PlayerInputComponent ) )
-	{
-		if ( SprintAction )
-		{
-			eic->BindAction( SprintAction, ETriggerEvent::Started,   this, &ATPSCharacter::OnSprintPressed  );
-			eic->BindAction( SprintAction, ETriggerEvent::Completed, this, &ATPSCharacter::OnSprintReleased );
-			eic->BindAction( SprintAction, ETriggerEvent::Canceled,  this, &ATPSCharacter::OnSprintReleased );
-		}
-	}
-}
+// // 입력 액션에 콜백을 바인딩한다.
+// void ATPSCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputComponent )
+// {
+// 	Super::SetupPlayerInputComponent( PlayerInputComponent );
+//
+// 	if ( UEnhancedInputComponent* eic = Cast< UEnhancedInputComponent >( PlayerInputComponent ) )
+// 	{
+// 		if ( SprintAction )
+// 		{
+// 			eic->BindAction( SprintAction, ETriggerEvent::Started,   this, &ATPSCharacter::OnSprintPressed  );
+// 			eic->BindAction( SprintAction, ETriggerEvent::Completed, this, &ATPSCharacter::OnSprintReleased );
+// 			eic->BindAction( SprintAction, ETriggerEvent::Canceled,  this, &ATPSCharacter::OnSprintReleased );
+// 		}
+//
+// 		if ( ReloadAction )
+// 		{
+// 			eic->BindAction( ReloadAction, ETriggerEvent::Started, this, &ATPSCharacter::OnReload );
+// 		}
+// 	}
+// }
 
 // 스프린트 입력 시작 시 Sprint 어빌리티를 활성화한다.
 void ATPSCharacter::OnSprintPressed( const FInputActionValue& /*Value*/ )
@@ -571,9 +581,15 @@ void ATPSCharacter::Drop( const FInputActionValue& Value )
 
 	CurrentWeapon->Destroy();
 	CurrentWeapon = nullptr;
-	CurrentWeaponType = EWeaponType::Max;
+	CurrentWeaponType = EWeaponType::None;
+
+	// 장탄수/재장전 상태 초기화 (진행 중이던 재장전 타이머 취소)
+	CurrentBullet = 0;
+	IsReloading   = false;
+	GetWorldTimerManager().ClearTimer( ReloadTimerHandle );
 
 	_ToggleHUDUI( false );
+	_RefreshWeaponHUD();
 }
 
 // 카메라 시점을 변경한다.
@@ -665,6 +681,20 @@ void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
 bool ATPSCharacter::HandleFireWeaponInteract()
 {
 	if ( !CurrentWeapon.IsValid() || CurrentWeaponType == EWeaponType::Max ) return false;
+
+	// 재장전 중에는 발사 불가
+	if ( IsReloading ) return false;
+
+	// 탄창이 비었으면 발사 불가 (재장전 필요)
+	if ( CurrentBullet <= 0 )
+	{
+		UE_LOG( LogGameplay, Log, TEXT( "[TPS] Fire blocked — magazine empty (need reload)" ) );
+		return false;
+	}
+
+	// 탄약 1발 소모 후 HUD 장탄수 동기화
+	--CurrentBullet;
+	_RefreshWeaponHUD();
 
 	if ( ITPSEquipInteractionActorInterface* interactionEquipActorInterface = Cast< ITPSEquipInteractionActorInterface >( CurrentWeapon ) )
 	{
@@ -804,5 +834,50 @@ void ATPSCharacter::Fire( const bool InIsFiring )
 	IsFiring = InIsFiring;
 
 	if ( IsFiring ) HandleFireWeaponInteract();
+}
+
+// 재장전 입력을 받아 재장전을 시작한다.
+void ATPSCharacter::OnReload( const FInputActionValue& /*Value*/ )
+{
+	// 무기 미장착 / 이미 재장전 중이면 무시
+	if ( !CurrentWeapon.IsValid() || CurrentWeaponType == EWeaponType::Max ) return;
+	if ( IsReloading ) return;
+
+	// 이미 가득 찬 경우 재장전 불필요
+	const int32 magazineSize = GetWeaponData().MagazineSize;
+	if ( CurrentBullet >= magazineSize ) return;
+
+	IsReloading = true;
+
+	// NOTE : 여기서 무기 타입별 재장전 몽타주를 재생하고, ReloadTime을 몽타주 길이에 맞추면 더 자연스럽다.
+
+	// ReloadTime 경과 후 탄창 보충
+	GetWorldTimerManager().SetTimer( ReloadTimerHandle, this, &ATPSCharacter::_FinishReload, ReloadTime, false );
+
+	UE_LOG( LogGameplay, Log, TEXT( "[TPS] Reload started (%.1fs)" ), ReloadTime );
+}
+
+// 재장전을 완료하여 탄창을 보충하고 HUD를 동기화한다.
+void ATPSCharacter::_FinishReload()
+{
+	IsReloading = false;
+
+	// 재장전 도중 무기를 잃었을 수 있으므로 재확인
+	if ( !CurrentWeapon.IsValid() || CurrentWeaponType == EWeaponType::Max ) return;
+
+	CurrentBullet = GetWeaponData().MagazineSize;
+
+	_RefreshWeaponHUD();
+
+	UE_LOG( LogGameplay, Log, TEXT( "[TPS] Reload finished — %d rounds" ), CurrentBullet );
+}
+
+// 현재 무기 타입/장탄수를 HUD에 동기화한다.
+void ATPSCharacter::_RefreshWeaponHUD() const
+{
+	if ( UTPSHUD* hudUI = _GetHUDUI() )
+	{
+		hudUI->RefreshWeaponInfo( CurrentWeaponType, CurrentBullet );
+	}
 }
 
