@@ -20,6 +20,14 @@ class TPS_TUTORIAL_API UTPSGameplayAbility_Sprint : public UTPSGameplayAbilityBa
 public:
 	UTPSGameplayAbility_Sprint();
 
+	// 스태미나가 최소치 이하이면 발동 불가 (고갈 직후 재발동 방지)
+	virtual bool CanActivateAbility(
+		const FGameplayAbilitySpecHandle Handle,
+		const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayTagContainer* SourceTags,
+		const FGameplayTagContainer* TargetTags,
+		FGameplayTagContainer* OptionalRelevantTags ) const override;
+
 	virtual void ActivateAbility(
 		const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,
@@ -41,6 +49,10 @@ protected:
 	// 스프린트 이동 속도 (cm/s)
 	UPROPERTY( EditDefaultsOnly, Category = "GAS" )
 	float SprintSpeed = 1000.0f;
+
+	// 스프린트 발동에 필요한 최소 스태미나
+	UPROPERTY( EditDefaultsOnly, Category = "GAS" )
+	float MinStaminaToSprint = 1.0f;
 
 	// 평상시 이동 속도 — EndAbility에서 원복
 	float CachedWalkSpeed = 600.0f;

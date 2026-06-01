@@ -84,6 +84,10 @@ protected:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "GAS" )
 	TArray< TSubclassOf< UGameplayEffect > > DefaultEffects;
 
+	// 스태미나 자동 회복 GE (Infinite, 스프린트 중엔 억제) — 생성자에서 C++ 기본값 지정
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "GAS" )
+	TSubclassOf< UGameplayEffect > StaminaRegenEffect;
+
 	// Sprint 입력 액션
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input" )
 	TObjectPtr< UInputAction > SprintAction;

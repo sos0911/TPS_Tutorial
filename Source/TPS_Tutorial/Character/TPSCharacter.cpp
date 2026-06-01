@@ -20,6 +20,7 @@
 #include "GAS/TPSAttributeSet.h"
 #include "GAS/TPSGameplayTags.h"
 #include "GAS/Abilities/TPSGameplayAbilityBase.h"
+#include "GAS/Effects/TPSGameplayEffect_StaminaRegen.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Log/TPSLog.h"
 #include "Logic/ITPSInteractionActorInterface.h"
@@ -40,6 +41,9 @@ ATPSCharacter::ATPSCharacter()
 	AbilitySystemComponent->SetIsReplicated( true );
 
 	AttributeSet = CreateDefaultSubobject< UTPSAttributeSet >( TEXT( "AttributeSet" ) );
+
+	// 스태미나 자동 회복 GE 기본 클래스 지정 (BP에서 오버라이드 가능)
+	StaminaRegenEffect = UTPSGameplayEffect_StaminaRegen::StaticClass();
 }
 
 // ASC를 반환한다 (IAbilitySystemInterface 구현).
@@ -319,6 +323,19 @@ void ATPSCharacter::_InitAbilitySystem()
 		}
 	}
 
+	// 스태미나 자동 회복 GE 적용 (Infinite — 스프린트 중엔 GE가 스스로 억제됨)
+	if ( StaminaRegenEffect )
+	{
+		FGameplayEffectContextHandle ctx = AbilitySystemComponent->MakeEffectContext();
+		ctx.AddSourceObject( this );
+
+		const FGameplayEffectSpecHandle specHandle = AbilitySystemComponent->MakeOutgoingSpec( StaminaRegenEffect, 1.0f, ctx );
+		if ( specHandle.IsValid() )
+		{
+			AbilitySystemComponent->ApplyGameplayEffectSpecToSelf( *specHandle.Data.Get() );
+		}
+	}
+
 	// 기본 어빌리티 부여
 	for ( const TSubclassOf< UTPSGameplayAbilityBase >& abilityClass : DefaultAbilities )
 	{
@@ -351,6 +368,12 @@ void ATPSCharacter::_HandleStaminaChanged( float NewValue, float MaxValue, float
 	if ( UTPSHUD* hudUI = _GetHUDUI() )
 	{
 		hudUI->SetStaminaPercent( percent );
+	}
+
+	// 스태미나 고갈 시 스프린트 강제 종료 (드레인 GE 제거 + 속도 원복은 EndAbility가 처리)
+	if ( NewValue <= 0.0f && AbilitySystemComponent )
+	{
+		AbilitySystemComponent->CancelAbilityByTag( TAG_Ability_Sprint );
 	}
 }
 
