@@ -15,7 +15,7 @@ ATPSPlayerController::ATPSPlayerController()
 void ATPSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	UTPSHUD::Create();
 }
 

@@ -35,8 +35,8 @@ void ATPSPickUpBase::OnBeginOverlap( UPrimitiveComponent* OverlappedComponent, A
 }
 
 // Called every frame
-void ATPSPickUpBase::Tick(float DeltaTime)
+void ATPSPickUpBase::Tick( float DeltaTime )
 {
-	Super::Tick(DeltaTime);
+	Super::Tick( DeltaTime );
 }
 

@@ -41,7 +41,7 @@ protected:
 
 	// pitch 회전값
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input" )
-	float Pitch = 0.0f;  
+	float Pitch = 0.0f;
 
 	// Roll 값
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input" )
@@ -109,7 +109,7 @@ private:
 	UChildActorComponent*   FPSCameraComp     = nullptr; // FPS 카메라 컴포넌트 객체
 	USkeletalMeshComponent* FaceComp		  = nullptr; // 얼굴 컴포넌트 객체
 	USkeletalMeshComponent* BodyComp		  = nullptr; // 몸통 컴포넌트 객체
-	
+
 	UChildActorComponent*   CurrentCameraComp = nullptr; // 현재 사용 중인 카메라 컴포넌트 객체
 	TPSActorPtr				CurrentWeapon	  = nullptr; // 현재 장착중인 무기 객체
 
@@ -165,7 +165,7 @@ public:
 	ATPSCharacter();
 
 	// Called every frame
-	virtual void Tick(float DeltaTime ) override;
+	virtual void Tick( float DeltaTime ) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent( class UInputComponent* PlayerInputComponent ) override;
@@ -176,7 +176,7 @@ public:
 	// 오버랩이 시작되었음을 알리는 이벤트를 처리한다.
 	UFUNCTION()
 	void OnBeginOverlap( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult );
-	
+
 	// 현재 무기 데이터를 반환한다.
 	FWeaponTableData GetWeaponData() const;
 

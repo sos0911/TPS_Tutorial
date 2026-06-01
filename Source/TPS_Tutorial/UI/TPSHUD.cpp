@@ -16,10 +16,10 @@ UTPSHUD* UTPSHUD::Create()
 {
 	UTPSGameInstance* gameInstance = UTPSGameInstance::GetGameInstance();
 	if ( !gameInstance ) return nullptr;
-	
+
 	UTPSUIManager* uiManager = gameInstance->GetUIManager();
 	if ( !uiManager ) return nullptr;
-	
+
 	return uiManager->CreateAndAddViewport< UTPSHUD >( GetFilePath() );
 }
 
@@ -40,13 +40,13 @@ void UTPSHUD::Refresh( const bool bAim, const EWeaponType WeaponType, const int3
 {
 	if ( !CrossHairPanel      ) return;
 	if ( !SwitcherWeaponState ) return;
-	
+
 	TPSUtilWidget::SetVisibility( CrossHairPanel, bAim ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed );
 	SwitcherWeaponState->SetActiveWidgetIndex( WeaponType == EWeaponType::None ? static_cast< int32 >( EWeaponState::Empty ) : static_cast< int32 >( EWeaponState::Gun ) );
 
 	// NOTE : Character actor 찾아서 datacomponent 참조해도 되나, 일단 EWeaponType 인자로 찾아본다.
 	// if ( ATPSCharacter* character = Cast< ATPSCharacter >( UGameplayStatics::GetPlayerCharacter( GetWorld(), 0 ) ) )
-	
+
 	if ( UTPSDataManager* dataManager = GetTPSDataManager() )
 	{
 		const FStringTableData* stringData = dataManager->FindRow< FStringTableData >( TEXT( "DT_String" ), TEXT( "BULLET_DESCRIPTION" )     );
@@ -56,7 +56,7 @@ void UTPSHUD::Refresh( const bool bAim, const EWeaponType WeaponType, const int3
 			FString resText = stringData->StringValue;
 			resText = resText.Replace( TEXT( "[LeftValue]" ), *TPSUtil::ToString( LeftBullet               ) );
 			resText = resText.Replace( TEXT( "[AllValue]"  ), *TPSUtil::ToString( weaponData->MagazineSize ) );
-			
+
 			TPSUtilWidget::SetText( TextBullet, resText );
 		}
 	}

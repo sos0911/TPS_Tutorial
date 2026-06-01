@@ -21,12 +21,12 @@ void ATPSShotImpactField::BeginPlay()
 }
 
 // Called every frame
-void ATPSShotImpactField::Tick(float DeltaTime)
+void ATPSShotImpactField::Tick( float DeltaTime )
 {
-	Super::Tick(DeltaTime);
+	Super::Tick( DeltaTime );
 }
 
-// 위젯 경로를 반환한다. 
+// 위젯 경로를 반환한다.
 FString ATPSShotImpactField::GetPath()
 {
 	return TEXT( "/Game/CustomContents/Player/Weapons/BP_ShotImpactField.BP_ShotImpactField_C" );

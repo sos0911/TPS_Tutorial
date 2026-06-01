@@ -1,8 +1,11 @@
+// 상호작용 액터 인터페이스 헤더 파일
+
+
 #pragma once
 
 
 #include "CoreMinimal.h"
-#include "Runtime/CoreUObject/Public/UObject/Interface.h"
+#include "UObject/Interface.h"
 #include "ITPSInteractionActorInterface.generated.h"
 
 
@@ -11,7 +14,7 @@ UINTERFACE( MinimalAPI )
 class UTPSInteractionActorInterface : public UInterface
 {
 	GENERATED_BODY()
-	
+
 };
 
 UINTERFACE( MinimalAPI )

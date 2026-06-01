@@ -12,7 +12,7 @@
 UTPSGameInstance* UTPSGameInstance::GetGameInstance()
 {
 	if ( !GEngine ) return nullptr;
-	
+
 #if WITH_EDITOR
 	for ( const FWorldContext& context : GEngine->GetWorldContexts() )
 	{
@@ -20,7 +20,7 @@ UTPSGameInstance* UTPSGameInstance::GetGameInstance()
 		{
 			UWorld* world = context.World();
 			if ( !world ) continue;
-			
+
 			return world->GetGameInstance< UTPSGameInstance >();
 		}
 	}
@@ -30,7 +30,7 @@ UTPSGameInstance* UTPSGameInstance::GetGameInstance()
 		return world->GetGameInstance< UTPSGameInstance >();
 	}
 #endif
-	
+
 	return nullptr;
 }
 

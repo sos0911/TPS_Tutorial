@@ -29,10 +29,17 @@ Unreal Engine 5.x 기반 TPS(3인칭 슈터) 학습/튜토리얼 프로젝트. �
 - `Manager/`, `UI/`, `Util/`, `Consts/`, `Log/`
 
 ## 네이밍 / 코딩 컨벤션
-- UE 표준 접두사 + 프로젝트 접두사 `TPS`: `ATPSCharacter`, `UTPSAnimInstance`, `FTPS...`, `ITPS...`
-- 헤더 스타일: `#pragma once` → `CoreMinimal.h` → 기타 include → `*.generated.h`
-- 한국어 인라인 주석 사용 (예: `// TPS 캐릭터 클래스`)
-- `.clang-format` 없음 → IDE/UE 기본 포맷 따름
+> ⚠️ **권위 기준: `Docs/CodingConventions.md`** — 코드 작성·수정·규약 점검 시 반드시 이 문서를 먼저 읽고 따른다. (실제 소스를 역공학한 단일 레퍼런스. 추론 금지)
+
+핵심 요약 (전체는 위 문서):
+- UE 표준 접두사 + 프로젝트 접두사 `TPS`: `ATPSCharacter`, `UTPSGameInstance`, `FWeaponTableData`, `ITPS...`
+- 괄호·꺽쇠 **안쪽 공백 강제**: `if ( cond )`, `Func( arg )`, `Cast< T >( ptr )`, `TArray< T* >` (§3.1/§3.2) — `.cpp` 정의부 시그니처까지 적용
+- 멤버 PascalCase / 지역 camelCase / **private helper만 `_PascalCase`** (§2.3~2.5)
+- **기존 raw 포인터는 유지**, 신규 UObject 멤버에만 `TObjectPtr< T >` (§4.3) — 일괄 마이그레이션 금지
+- 들여쓰기 탭, trailing whitespace 금지, CRLF 유지 (§3.3/§12.8)
+- 선언부(.h)·정의부(.cpp) 각각 위에 한국어 `~한다.` 한 줄 주석 (§6.1)
+- include: `CoreMinimal.h` 최상단 → 알파벳 → `*.generated.h` 마지막 (§5.1)
+- `.clang-format` 없음 → 위 문서가 포맷 기준
 
 ## VCS — Git
 - 현재 작업 브랜치: `GAS` / 기준 `master`

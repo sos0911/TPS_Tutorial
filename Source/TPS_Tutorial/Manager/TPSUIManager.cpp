@@ -31,7 +31,7 @@ void UTPSUIManager::Clear()
 UUserWidget* UTPSUIManager::FindWidget( UClass* WidgetClass ) const
 {
 	if ( !WidgetClass ) return nullptr;
-	
+
 	UUserWidget* const* widgetPtr = WidgetMap.Find( WidgetClass );
 	return widgetPtr ? *widgetPtr : nullptr;
 }

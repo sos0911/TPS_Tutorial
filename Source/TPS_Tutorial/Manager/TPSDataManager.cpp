@@ -19,7 +19,7 @@ UTPSDataManager* UTPSDataManager::Create( UObject* Owner )
 void UTPSDataManager::Init()
 {
 	const FString dataPathPrefixStr = TPSUtilPath::GetDataPath();
-	
+
 	_LoadTable( TEXT( "DT_Weapon" ), *( dataPathPrefixStr + TEXT( "DT_Weapon" ) ) );
 	_LoadTable( TEXT( "DT_String" ), *( dataPathPrefixStr + TEXT( "DT_String" ) ) );
 }

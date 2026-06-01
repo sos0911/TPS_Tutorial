@@ -59,7 +59,7 @@ void ATPSCharacter::BeginPlay()
 	for ( UChildActorComponent* childActorComponent : childActorComponents )
 	{
 		if ( !childActorComponent ) continue;
-		
+
 		if ( childActorComponent->GetName().Equals( TPSCameraCompName ) )
 		{
 			TPSCameraComp = childActorComponent;
@@ -93,7 +93,7 @@ void ATPSCharacter::BeginPlay()
 
 	IsTPSMode  = true;
 	IsZoomMode = false;
-	
+
 	_ToggleHUDUI( false );
 
 	if ( UCapsuleComponent* capsuleComp = GetCapsuleComponent() )
@@ -195,7 +195,7 @@ bool ATPSCharacter::HandlePickUpWeaponInteract( AActor* OtherActor )
 
 	CurrentWeapon = weapon;
 	CurrentWeaponType = weaponData->WeaponType;
-	
+
 	if ( IsTPSMode || !IsZoomMode ) _ToggleHUDUI( true );
 
 	return true;
@@ -229,23 +229,23 @@ void ATPSCharacter::_ToggleHUDUI( const bool bOn )
 
 	UTPSUIManager* uiManager = gameInstance->GetUIManager();
 	if ( !uiManager ) return;
-	
+
 	UTPSHUD* hudUI = Cast< UTPSHUD >( uiManager->FindWidget( UTPSHUD::StaticClass() ) );
 	if ( !hudUI ) return;
-	
+
 	hudUI->ToggleCrosshair( bOn );
 }
 
 // 매 프레임 기울이기(Roll)와 점프 상태를 갱신한다.
-void ATPSCharacter::Tick(float DeltaTime)
+void ATPSCharacter::Tick( float DeltaTime )
 {
-	Super::Tick(DeltaTime);
+	Super::Tick( DeltaTime );
 
 	if ( IsLeaning )
 	{
 		if ( !FMath::IsNearlyEqual( Roll, TargetRollValue ) ) Roll = FMath::FInterpTo( Roll, TargetRollValue, DeltaTime, 5.0f );
 	}
-	else 
+	else
 	{
 		if ( !FMath::IsNearlyEqual( Roll, 0.0f ) ) Roll = FMath::FInterpTo( Roll, 0.0f, DeltaTime, 5.0f );
 	}
@@ -254,9 +254,9 @@ void ATPSCharacter::Tick(float DeltaTime)
 }
 
 // 입력 액션에 콜백을 바인딩한다.
-void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ATPSCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputComponent )
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	Super::SetupPlayerInputComponent( PlayerInputComponent );
 
 	if ( UEnhancedInputComponent* eic = Cast< UEnhancedInputComponent >( PlayerInputComponent ) )
 	{
@@ -351,7 +351,7 @@ void ATPSCharacter::_HandleOnDeath()
 	}
 
 	// 입력 비활성
-	if ( APlayerController* pc = GetController<APlayerController>() )
+	if ( APlayerController* pc = GetController< APlayerController >() )
 	{
 		DisableInput( pc );
 	}
@@ -388,7 +388,7 @@ FWeaponTableData ATPSCharacter::GetWeaponData() const
 
 	const FWeaponTableData* weaponData = dataComponent->GetData< FWeaponTableData >();
 	if ( !weaponData ) return FWeaponTableData();
-	
+
 	return *weaponData;
 }
 
@@ -403,22 +403,22 @@ void ATPSCharacter::Move( const FInputActionValue& Value )
 	double yValue = Value.Get< FVector2D >().Y;
 
 	FRotator rotator = GetControlRotation();
-	
+
 	UE_LOG( LogGameplay, Log, TEXT( "rotate value : { %f %f }" ), rotator.Pitch, rotator.Yaw );
-	
+
 	// TODO : 아래 계산 공식에서 Roll 이 RightVector 뽑는 데 필요한가? wasd 모두 yaw 만 필요하지 않나 싶은데..
 	if ( FMath::Abs( xValue ) > 0 )
 	{
 		FVector movementVector = UKismetMathLibrary::GetRightVector( FRotator( rotator.Pitch, rotator.Yaw, 0.0f ) );
 		UE_LOG( LogGameplay, Log, TEXT( "Add Movement Input : [%f, %f, %f]" ), movementVector.X, movementVector.Y, movementVector.Z );
-		
+
 		AddMovementInput( movementVector, xValue );
 	}
 	if ( FMath::Abs( yValue ) > 0 )
 	{
 		FVector movementVector = UKismetMathLibrary::GetForwardVector( FRotator( 0.0f, rotator.Yaw, 0.0f  ) );
 		UE_LOG( LogGameplay, Log, TEXT( "Add Movement Input : [%f, %f, %f]" ), movementVector.X, movementVector.Y, movementVector.Z );
-		
+
 		AddMovementInput( movementVector, yValue );
 	}
 
@@ -468,7 +468,7 @@ void ATPSCharacter::Lean( const FInputActionValue& Value )
 
 	const float axisValue = Value.Get< float >();
 	IsLeaning = FMath::Abs( axisValue ) > KINDA_SMALL_NUMBER;
-	
+
 	TargetRollValue = FMath::GetMappedRangeValueClamped( FVector2f( -1.0f, 1.0f ), FVector2f( -10.0f, 10.0f ), axisValue );
 }
 
@@ -505,7 +505,7 @@ void ATPSCharacter::Drop( const FInputActionValue& Value )
 	// spawnParams.Owner                          = nullptr;
 	// spawnParams.Instigator                     = GetInstigator();
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	
+
 	UWorld* world = GetWorld();
 	if ( !world ) return;
 
@@ -542,7 +542,7 @@ void ATPSCharacter::ToggleCameraMode( const FInputActionValue& Value )
 	if ( !TPSCameraComp || !TPSZoomCameraComp || !FPSCameraComp ) return;
 
 	IsTPSMode = !IsTPSMode;
-	
+
 	float cameraBlendTime = 0.2f;
 	playerController->SetViewTargetWithBlend( IsTPSMode ? TPSCameraComp->GetChildActor() : FPSCameraComp->GetChildActor(), cameraBlendTime, VTBlend_Linear, 0, true );
 	CurrentCameraComp = IsTPSMode ? TPSCameraComp : FPSCameraComp;
@@ -551,10 +551,10 @@ void ATPSCharacter::ToggleCameraMode( const FInputActionValue& Value )
 	auto ftrToggleFaceCompVisibility = [ this, thisPtr ] ()
 	{
 		if ( !thisPtr.IsValid() ) return;
-		
+
 		if ( FaceComp ) FaceComp->SetHiddenInGame( !IsTPSMode, true );
 	};
-	
+
 	if ( IsTPSMode )
 	{
 		ftrToggleFaceCompVisibility();
@@ -594,8 +594,8 @@ void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
 
 			UChildActorComponent* childActorComp = Cast< UChildActorComponent >( springArmComp->GetChildComponent( 0 ) );
 			if ( !childActorComp ) return;
-			
-			playerController->SetViewTargetWithBlend( childActorComp->GetChildActor(), cameraBlendTime, VTBlend_Linear, 0, true);
+
+			playerController->SetViewTargetWithBlend( childActorComp->GetChildActor(), cameraBlendTime, VTBlend_Linear, 0, true );
 			CurrentCameraComp = childActorComp;
 		}
 		else
@@ -604,7 +604,7 @@ void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
 			CurrentCameraComp = FPSCameraComp;
 		}
 	}
-	
+
 	// 스나이퍼 라이플의 경우 줌 시에만 씬 캡쳐를 활성화한다.
 	if ( ATPSEquipSniperRifle* sniperRifle = Cast< ATPSEquipSniperRifle >( CurrentWeapon.Get() ) )
 	{
@@ -626,7 +626,7 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 		interactionEquipActorInterface->HandleFireWeaponInteract();
 	}
 
-	FString FireMontagePath = TEXT( "/Game/CustomContents/Animations/" ); 
+	FString FireMontagePath = TEXT( "/Game/CustomContents/Animations/" );
 
 	// NOTE : PlayMontage 구현부까지 여기로 옮길 것.
 	switch ( CurrentWeaponType )
@@ -654,9 +654,9 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 	{
 		if ( !thisPtr.IsValid() ) return;
 
-		IsFiring = false;	
+		IsFiring = false;
 	};
-	
+
 	PlayAnimMontage( fireMontage );
 
 	if ( FOnMontageBlendingOutStarted* interruptDelegate = animInstance->Montage_GetBlendingOutDelegate( fireMontage ) )
@@ -683,7 +683,7 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 			{
 				FVector rayStartLoc = CurrentCameraComp->GetComponentLocation();
 				FVector rayEndLoc   = rayStartLoc + CurrentCameraComp->GetForwardVector() * 10000.0f;
-				
+
 				FHitResult hitResult;
 				TArray< TEnumAsByte< EObjectTypeQuery > > objTypes =
 				{
@@ -691,20 +691,20 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 					UEngineTypes::ConvertToObjectType( ECC_WorldDynamic ),
 					UEngineTypes::ConvertToObjectType( ECC_Destructible )
 				};
-				
+
 				FCollisionQueryParams queryParams;
 				queryParams.AddIgnoredActor( this );
-			
+
 				bHit = GetWorld()->LineTraceSingleByObjectType( hitResult, rayStartLoc, rayEndLoc, FCollisionObjectQueryParams( objTypes ), queryParams );
 				if ( bHit )
 				{
 					FActorSpawnParameters spawnParams;
 					spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-				
+
 					ATPSShotImpactField* fieldActor = GetWorld()->SpawnActor< ATPSShotImpactField >(
 						LoadClass< ATPSShotImpactField >( nullptr, *ATPSShotImpactField::GetPath() ),
 						FVector( hitResult.ImpactPoint ), FRotator(), spawnParams );
-					
+
 					FTimerHandle removeImpactFieldTimerHandle;
 					TWeakObjectPtr< ATPSShotImpactField > weakFieldActor = fieldActor;
 					GetWorldTimerManager().SetTimer( removeImpactFieldTimerHandle, [ weakFieldActor ] ()
@@ -715,13 +715,13 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 					}, 0.1f, false );
 				}
 			}
-			
+
 			// // Step 2 : 총구에서 충돌 검출된 위치까지 충돌 검출하여 충돌 처리함.
 			// // NOTE : 단순히 Step 1처럼 충돌 처리 한번 하고 끝낼 수 있지만 추후 실제 총알 발사 등의 스폰 처리를 위하여 이렇게 일괄 처리한다.
 			// {
 			// 	FVector rayStartLoc = muzzleSocket->GetSocketLocation( weaponMeshComp );
 			// 	FVector rayEndLoc   = bHit ? hitLocation : rayStartLoc + muzzleSocket->GetSocketTransform( weaponMeshComp ).GetUnitAxis( EAxis::X ) * 10000.0f;
-			// 	
+			//
 			// 	FHitResult hitResult;
 			// 	TArray< TEnumAsByte< EObjectTypeQuery > > objTypes =
 			// 	{
@@ -739,7 +739,7 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 			// 	{
 			// 		FActorSpawnParameters spawnParams;
 			// 		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			// 	
+			//
 			// 		ATPSShotImpactField* fieldActor = GetWorld()->SpawnActor< ATPSShotImpactField >(
 			// 			LoadClass< ATPSShotImpactField >( nullptr, *ATPSShotImpactField::GetPath() ),
 			// 			FVector( hitResult.ImpactPoint ), FRotator(), spawnParams );
@@ -747,7 +747,7 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 			// }
 		}
 	}
-	
+
 	return true;
 }
 

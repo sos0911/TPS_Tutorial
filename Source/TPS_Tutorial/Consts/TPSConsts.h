@@ -9,7 +9,7 @@
 UENUM( BlueprintType )
 enum class EWeaponType : uint8
 {
-	None,			 // 없음 
+	None,			 // 없음
 	Pistol,          // 권총
 	AssaultRifle,    // 돌격소총
 	SniperRifle,     // 저격소총
@@ -23,11 +23,11 @@ enum class EWeaponType : uint8
 UENUM( BlueprintType )
 enum class ECharacterMoveDirection : uint8
 {
-	Forward,  // 앞쪽 
+	Forward,  // 앞쪽
 	Backward, // 뒤쪽
 	Left,     // 왼쪽
 	Right,    // 오른쪽
-	Max       
+	Max
 };
 
 USTRUCT( BlueprintType )
@@ -64,7 +64,7 @@ USTRUCT( BlueprintType )
 struct FStringTableData : public FTableRowBase
 {
 	GENERATED_BODY()
-	
+
 	// StringValue
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "String Data" )
 	FString StringValue = TEXT( "" );

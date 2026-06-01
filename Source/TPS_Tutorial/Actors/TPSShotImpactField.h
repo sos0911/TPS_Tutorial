@@ -28,8 +28,8 @@ protected:
 
 public:
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void Tick( float DeltaTime ) override;
 
-	// 위젯 경로를 반환한다. 
+	// 위젯 경로를 반환한다.
 	static FString GetPath();
 };

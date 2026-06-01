@@ -6,12 +6,12 @@
 #include "Kismet/KismetRenderingLibrary.h"
 
 
-// 생성자 
+// 생성자
 ATPSEquipSniperRifle::ATPSEquipSniperRifle()
 {
 	// SceneCaptureComp = FindComponentByClass< USceneCaptureComponent2D >();
 	// if ( SceneCaptureComp ) SceneCaptureComp->SetupAttachment( WeaponComp, TEXT( "Scope" ) );
-	
+
 	SceneCaptureComp = CreateDefaultSubobject< USceneCaptureComponent2D >( TEXT( "SceneCaptureComp" ) );
 	if ( SceneCaptureComp )
 	{
@@ -41,13 +41,13 @@ void ATPSEquipSniperRifle::SetSceneCaptureEnabled( bool bEnabled )
 void ATPSEquipSniperRifle::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	LensMeshComp  = FindComponentByTag< UStaticMeshComponent >( "Lens"  );
 	ScopeMeshComp = FindComponentByTag< UStaticMeshComponent >( "Scope" );
-	
+
 	// TODO : 메터리얼에 스코프 소켓에서 보이는 뷰포트 화면 렌더링
 	UTextureRenderTarget2D* renderTarget2D = UKismetRenderingLibrary::CreateRenderTarget2D( this, 512, 512, RTF_RGBA8 );
-	
+
 	// 씬캡쳐 컴포넌트가 매 틱 찍는 스크린샷을 renderTarget2D 로 받아온다.
 	SceneCaptureComp->TextureTarget = renderTarget2D;
 	if ( LensMeshComp )
