@@ -9,7 +9,7 @@
 UENUM( BlueprintType )
 enum class EWeaponType : uint8
 {
-	None,			 // 없음 
+	None,			 // 없음
 	Pistol,          // 권총
 	AssaultRifle,    // 돌격소총
 	SniperRifle,     // 저격소총
@@ -23,11 +23,11 @@ enum class EWeaponType : uint8
 UENUM( BlueprintType )
 enum class ECharacterMoveDirection : uint8
 {
-	Forward,  // 앞쪽 
+	Forward,  // 앞쪽
 	Backward, // 뒤쪽
 	Left,     // 왼쪽
 	Right,    // 오른쪽
-	Max       
+	Max
 };
 
 USTRUCT( BlueprintType )
@@ -36,27 +36,27 @@ struct FWeaponTableData : public FTableRowBase
 	GENERATED_BODY()
 
 	// WeaponName
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon Data" )
 	FName WeaponName = TEXT( "" );
 
 	// WeaponType
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon Data" )
 	EWeaponType WeaponType = EWeaponType::Max;
 
 	// Damage
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon Data" )
 	float Damage = 0.0f;
 
 	// MagazineSize
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon Data" )
 	int32 MagazineSize = 0;
 
 	// PickUpWeapon: BP Pick Up We 클래스를 참조 (APickUpActor의 자식 클래스)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon Data" )
 	TSubclassOf< class AActor > PickUpWeapon;
 
 	// EquipWeapon: BP Equip We 클래스를 참조 (AEquipActor의 자식 클래스)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Data")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon Data" )
 	TSubclassOf< class AActor > EquipWeapon;
 };
 
@@ -64,8 +64,8 @@ USTRUCT( BlueprintType )
 struct FStringTableData : public FTableRowBase
 {
 	GENERATED_BODY()
-	
+
 	// StringValue
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "String Data")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "String Data" )
 	FString StringValue = TEXT( "" );
 };

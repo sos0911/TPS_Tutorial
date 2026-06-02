@@ -8,7 +8,7 @@
 
 
 // TPS 인게임 로그 카테고리 선언
-DECLARE_LOG_CATEGORY_EXTERN(LogGameplay, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN( LogGameplay, Log, All );
 
 
 // 디버깅 유틸리티

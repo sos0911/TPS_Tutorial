@@ -2,6 +2,7 @@
 
 
 #include "GameInstance/TPSGameInstance.h"
+#include "AbilitySystemGlobals.h"
 #include "Log/TPSLog.h"
 #include "Manager/TPSDataManager.h"
 #include "Manager/TPSUIManager.h"
@@ -11,7 +12,7 @@
 UTPSGameInstance* UTPSGameInstance::GetGameInstance()
 {
 	if ( !GEngine ) return nullptr;
-	
+
 #if WITH_EDITOR
 	for ( const FWorldContext& context : GEngine->GetWorldContexts() )
 	{
@@ -19,7 +20,7 @@ UTPSGameInstance* UTPSGameInstance::GetGameInstance()
 		{
 			UWorld* world = context.World();
 			if ( !world ) continue;
-			
+
 			return world->GetGameInstance< UTPSGameInstance >();
 		}
 	}
@@ -29,7 +30,7 @@ UTPSGameInstance* UTPSGameInstance::GetGameInstance()
 		return world->GetGameInstance< UTPSGameInstance >();
 	}
 #endif
-	
+
 	return nullptr;
 }
 
@@ -38,7 +39,7 @@ UTPSUIManager* UTPSGameInstance::GetUIManager() const
 {
 	if ( !UIManager )
 	{
-		UE_LOG( LogGameplay, Warning, TEXT("[TPS] UI Manager invalid" ) );
+		UE_LOG( LogGameplay, Warning, TEXT( "[TPS] UI Manager invalid" ) );
 	}
 
 	return UIManager;
@@ -49,7 +50,7 @@ UTPSDataManager* UTPSGameInstance::GetDataManager() const
 {
 	if ( !DataManager )
 	{
-		UE_LOG( LogGameplay, Warning, TEXT("[TPS] Data Manager invalid" ) );
+		UE_LOG( LogGameplay, Warning, TEXT( "[TPS] Data Manager invalid" ) );
 	}
 
 	return DataManager;
@@ -59,6 +60,9 @@ UTPSDataManager* UTPSGameInstance::GetDataManager() const
 void UTPSGameInstance::Init()
 {
 	Super::Init();
+
+	// GAS 글로벌 데이터 초기화 (TargetData 직렬화 등 일부 기능에 필수)
+	UAbilitySystemGlobals::Get().InitGlobalData();
 
 	UIManager = UTPSUIManager::Create( this );
 

@@ -7,13 +7,13 @@
 
 
 // TPS 인게임 로그 카테고리 정의
-DEFINE_LOG_CATEGORY(LogGameplay);
+DEFINE_LOG_CATEGORY( LogGameplay );
 
 
 // 콘솔 명령 구현: tps.DumpStack
 static void TPS_DumpStackCmd()
 {
-	UE_LOG(LogGameplay, Log, TEXT("[TPS] 현재 콜스택을 로그로 덤프합니다..."));
+	UE_LOG( LogGameplay, Log, TEXT( "[TPS] 현재 콜스택을 로그로 덤프합니다..." ) );
 
 	// StackWalk으로 버퍼에 담은 뒤 LogGameplay 카테고리로 출력하여 필터에 의해 프레임이 숨지지 않도록 한다.
 	const SIZE_T StackTraceSize = 65535;
@@ -36,7 +36,7 @@ static void TPS_DumpStackCmd()
 	}
 	else
 	{
-		UE_LOG( LogGameplay, Warning, TEXT("[TPS] 스택 트레이스 버퍼 할당에 실패했습니다." ) );
+		UE_LOG( LogGameplay, Warning, TEXT( "[TPS] 스택 트레이스 버퍼 할당에 실패했습니다." ) );
 	}
 }
 

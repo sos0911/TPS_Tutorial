@@ -19,11 +19,11 @@ class TPS_TUTORIAL_API ATPSPlayerCameraManager : public APlayerCameraManager
 
 protected:
 	// 머리 소켓 이름 (우선)
-	UPROPERTY(EditDefaultsOnly, Category = "TPS|Camera")
+	UPROPERTY( EditDefaultsOnly, Category = "TPS|Camera" )
 	FName HeadSocketNamePrimary = TEXT( "head" );
 
 	// 머리 소켓 이름 (대체)
-	UPROPERTY(EditDefaultsOnly, Category = "TPS|Camera")
+	UPROPERTY( EditDefaultsOnly, Category = "TPS|Camera" )
 	FName HeadSocketNameFallback = TEXT( "Head" );
 
 public:
@@ -37,6 +37,6 @@ private:
 	// 현재 뷰 타깃이 폰의 FPS 카메라인지 확인한다.
 	bool IsFirstPersonViewTargetFor( const APawn* Pawn ) const;
 
-    // 폰의 Lean Roll 값을 얻는다. 성공 시 true 반환
+	// 폰의 Lean Roll 값을 얻는다. 성공 시 true 반환
 	bool TryGetLeanRollFor( const APawn* Pawn, float& OutLeanRollDeg ) const;
 };

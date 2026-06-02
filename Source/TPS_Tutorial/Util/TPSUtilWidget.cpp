@@ -8,7 +8,7 @@
 void TPSUtilWidget::SetVisibility( UWidget* Widget, ESlateVisibility Visibility )
 {
 	if ( !Widget ) return;
-	
+
 	Widget->SetVisibility( Visibility );
 }
 

@@ -13,5 +13,12 @@ UCLASS()
 class TPS_TUTORIAL_API UTPSAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
-
+	
+public:
+	UPROPERTY( BlueprintReadOnly, Category = "TPS|Locomotion" )
+	bool bIsSprinting = false; // 현재 스프린팅 중인지 여부 ( 뛰는 중 )
+	
+protected:
+	// 틱당 애니메이션 업데이트 용으로 호출한다. 
+	virtual void NativeUpdateAnimation( float DeltaSeconds ) override;
 };

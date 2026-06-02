@@ -8,17 +8,20 @@ public class TPS_Tutorial : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] 
-			{ 
-				"Core", 
-				"CoreUObject", 
-				"Engine", 
-				"InputCore", 
-				"EnhancedInput", 
-				"FieldSystemEngine", 
-				"Chaos", 
+		PublicDependencyModuleNames.AddRange(new string[]
+			{
+				"Core",
+				"CoreUObject",
+				"Engine",
+				"InputCore",
+				"EnhancedInput",
+				"FieldSystemEngine",
+				"Chaos",
 				"ChaosSolverEngine",
-				"GeometryCollectionEngine"
+				"GeometryCollectionEngine",
+				"GameplayAbilities",
+				"GameplayTags",
+				"GameplayTasks"
 			});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "AnimGraphRuntime" });
