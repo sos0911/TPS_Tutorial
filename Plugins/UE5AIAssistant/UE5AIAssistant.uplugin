@@ -1,0 +1,23 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "UE5 AI Assistant",
+	"Description": "Embedded HTTP server for AI-driven editor operations. Exposes UE5 editor APIs (Actor, Blueprint, Material, Animation) via JSON-RPC over HTTP.",
+	"Category": "Editor",
+	"CreatedBy": "AI Assistant",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"CanContainContent": false,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "UE5AIAssistant",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit"
+		}
+	]
+}
