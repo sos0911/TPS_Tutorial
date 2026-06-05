@@ -15,10 +15,13 @@ ATPSPlayerController::ATPSPlayerController()
 void ATPSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-
-	UTPSHUD* hud = UTPSHUD::Create();
-	if ( !hud ) return;
 	
-	hud->Init();
+	if ( IsLocalController() )
+	{
+		UTPSHUD* hud = UTPSHUD::Create();
+		if ( !hud ) return;
+	
+		hud->Init();	
+	}
 }
 

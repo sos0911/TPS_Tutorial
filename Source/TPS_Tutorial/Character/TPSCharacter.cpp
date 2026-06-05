@@ -233,6 +233,8 @@ void ATPSCharacter::_AddControllerInput( const ERotationType RotationType, const
 // HUD UI를 토글한다.
 void ATPSCharacter::_ToggleHUDUI( const bool bOn )
 {
+	if ( !IsLocallyControlled() ) return;
+	
 	UTPSHUD* hudUI = _GetHUDUI();
 	if ( !hudUI ) return;
 
@@ -242,6 +244,8 @@ void ATPSCharacter::_ToggleHUDUI( const bool bOn )
 // 현재 HUD 위젯을 반환한다.
 UTPSHUD* ATPSCharacter::_GetHUDUI() const
 {
+	if ( !IsLocallyControlled() ) return nullptr;
+	
 	UTPSGameInstance* gameInstance = UTPSGameInstance::GetGameInstance();
 	if ( !gameInstance ) return nullptr;
 

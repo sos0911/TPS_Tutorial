@@ -115,7 +115,7 @@
 | 픽업 액터 `ATPSPickUpBase` | `.cpp:8-11` | **복제 안 됨** | — | `HandlePickUpWeaponInteract`가 `Destroy()` 직접 호출(`.cpp:27`) |
 | 임팩트 필드 `ATPSShotImpactField` (Chaos `AFieldSystemActor`) | `.h:13` | **복제 안 됨** | — | 발사 시 로컬 스폰 + 0.1초 후 로컬 Destroy(`TPSCharacter.cpp:779-790`) |
 | 사망 처리 `_HandleOnDeath` | `TPSCharacter.cpp:391-427` | 로컬 (라그돌+입력차단+`SetLifeSpan`) | 로컬 | `AddLooseGameplayTag( TAG_State_Dead )`, `DisableInput`, `SetSimulatePhysics` |
-| HUD 생성 | `TPSPlayerController.cpp:19-22` `BeginPlay`에서 무조건 생성 | — | 로컬 | **서버에서 LocalController 가드 없음 → DS 크래시 위험** |
+| HUD 생성 | `TPSPlayerController.cpp:19-22` `BeginPlay`에서 무조건 생성 | — | 로컬 | LocalController 가드는 없으나 **`if ( !hud ) return;` 널체크가 있어 DS에서도 크래시는 안 남**. 불필요 작업/패키징 빌드 견고성 차원에서 가드 권장(2-A) |
 | HUD 접근 | `TPSCharacter` `_GetHUDUI()` (`.cpp:243`) → `UTPSGameInstance::GetGameInstance()` 싱글턴 | — | 로컬 | 어트리뷰트 핸들러에서 직접 호출 → DS에서 가드 필요 |
 | 입력 바인딩 | `SetupPlayerInputComponent` **전체 주석 처리**(`TPSCharacter.cpp:271-290`); Sprint/Reload 콜백 존재하나 미바인딩 | — | — | BP에서 바인딩 중으로 추정. 멀티 전환 시 입력→RPC 경로 재정의 필요 |
 
@@ -128,6 +128,27 @@
 ### 1.3 결론 (현황 한 줄 요약)
 
 > **이동(Transform)만 엔진 기본으로 복제되고, 그 외 모든 게임 권위 상태(탄약/재장전/무기 소유/체력/스태미나/스프린트 속도/사망)와 코스메틱(`bIsSprinting`, 임팩트, 몽타주)은 로컬 전용이다.** ASC는 복제 플래그만 켜져 있을 뿐 `Minimal` 모드 + 단일 ActorInfo로 멀티 미대응.
+
+---
+
+## 1.5 테스트 충실도 전략 (L1~L4)
+
+> **엔진 소스 빌드는 필요 없다.** 런처(바이너리) 엔진 + 기존 `TPS_TutorialServer.Target.cs`만으로 서버 타깃 빌드·실행·패키징이 가능하다(C++ 프로젝트 + Server 타깃 조건 충족). 엔진 소스 빌드는 엔진 코드 자체를 고칠 때만 필요하며, 본 작업 범위에는 해당 없음.
+
+**핵심 원칙:** PIE 단일 프로세스는 에디터 안이라 렌더/UMG/Slate 모듈이 전부 살아있어 **진짜 패키징 DS를 충실히 재현하지 못한다.** 따라서 평소엔 빠른 PIE로 개발하되, **단계가 끝날 때마다 충실도를 한 단계 올려** 검증해서 문제가 막판에 한꺼번에 터지는 것을 막는다.
+
+| 레벨 | 방법 | 잡아내는 문제 | 빈도 |
+|---|---|---|---|
+| **L1** | PIE, Players=2, Net Mode `Play As Client`, **Run Under One Process 체크** | 복제 로직 대부분, RPC, RepNotify, 권위 분기 | 매 반복(평상시) |
+| **L2** | 위와 동일하되 **Run Under One Process 체크 해제** | 별도 프로세스/별도 메모리에서만 드러나는 문제, 실제 서버-클라 분리 | 각 단계 마무리 |
+| **L3** | IDE 빌드 구성을 `TPS_TutorialServer`로 빌드 → 서버 실행파일(`-log`) + standalone 클라 접속 | 쿡/모듈/에셋 누락, 클라 모듈 부재로 갈리는 DS 전용 경로 | 단계 마일스톤 |
+| **L4** | 풀 패키징 서버 빌드 | 최종 배포 검증 | 막판 1~2회 |
+
+**권장 운영:**
+- **평상시 개발·반복 = L1** (가장 빠름).
+- **각 단계(2/3/4) 종료 시 = L2 또는 L3 1회** 회귀 검증 → 그 단계 변경분을 실제 서버 분리 환경에서 확인. 문제를 단계별로 격리.
+- **L4는 막판**에만.
+- 각 단계의 "검증 방법" 항목은 기본 L1 기준이며, 단계 종료 시 L2/L3로 1회 승격해 재확인한다.
 
 ---
 
@@ -144,10 +165,11 @@ DS 안전 가드 + 액터 복제 기반 마련 + **재장전/탄약/무기 픽�
 
 #### 구체적 변경 대상
 
-**(2-A) DS 안전 가드 (선행, 작은 커밋)**
-- `Controller/TPSPlayerController.cpp:15-23` `BeginPlay`: HUD 생성을 `if ( IsLocalController() )`로 감싼다. DS에는 로컬 플레이어가 없어 `UTPSHUD::Create()`/`UUserWidget`가 크래시 가능.
-- `Character/TPSCharacter.cpp`: `_GetHUDUI()`(`.cpp:243`) 및 이를 호출하는 `_ToggleHUDUI`/`_RefreshWeaponHUD`/`_HandleStaminaChanged` 진입부에 `if ( !IsLocallyControlled() ) return;` 가드. `UTPSGameInstance::GetGameInstance()` 싱글턴은 DS에서도 존재하나 UIManager/HUD는 없음.
-- 예상: 함수 시그니처 변경 없음, 약 8~12 LOC.
+**(2-A) DS 안전 가드 (선행, 작은 커밋) — 크래시 방지 아님, 견고성·낭비 제거 목적**
+- **전제 정정:** 현재 코드는 **이미 방어적으로 짜여 있어** DS에서도 하드 크래시는 나지 않는다(실측 확인). `TPSPlayerController.cpp:19-22`는 `UTPSHUD* hud = UTPSHUD::Create(); if ( !hud ) return; hud->Init();`로 결과 널체크가 있고, `_GetHUDUI()`(`.cpp:242-252`)도 `GameInstance`→`UIManager`→위젯 각 단계마다 null이면 `nullptr` 반환한다. DS에서 `Create()`가 (로컬 플레이어 부재로) null을 주더라도 역참조 지점이 없다. → **따라서 2-A는 "필수 크래시 가드"가 아니다.**
+- **그럼에도 넣는 이유:** ① 서버에서 무의미한 클라 작업(위젯 생성 시도)을 안 하게 해 낭비/혼선 제거, ② `Create()`가 우연히 null을 주는 엔진 동작에 **의존하지 않도록** 의도를 명시(견고성), ③ **패키징된 서버 전용 빌드**에서는 UI 모듈/에셋이 쿡 단계에서 빠져 동작이 PIE와 달라질 수 있으므로 사전 차단.
+- 변경: `Controller/TPSPlayerController.cpp:15-23` `BeginPlay`의 HUD 생성을 `if ( IsLocalController() )`로 감싸고, `Character/TPSCharacter.cpp`의 `_GetHUDUI()`(`.cpp:242`) 및 호출부(`_ToggleHUDUI`/`_RefreshWeaponHUD`/`_HandleStaminaChanged`) 진입부에 `if ( !IsLocallyControlled() ) return;` 추가. `UTPSGameInstance::GetGameInstance()` 싱글턴은 DS에도 존재하나 UIManager/HUD는 의미 없음.
+- 우선순위: **권장(선행이면 좋음)**, 크래시 차단용 필수 아님. 함수 시그니처 변경 없음, 약 8~12 LOC.
 
 **(2-B) 액터 복제 활성화**
 - `Actors/TPSEquipBase.cpp` 생성자(`.cpp:10`): `bReplicates = true;` 추가. 컴포넌트 Transform이 부착(Attach) 기반이므로 `SetReplicateMovement( false )` 후 부모(캐릭터)에 attach 복제로 따라가게 함. 스나이퍼 `SceneCaptureComponent2D`/렌즈/스코프(`TPSEquipSniperRifle.h:19-22`)는 **코스메틱** — 복제 대상에서 제외, 클라에서만 활성(`SetSceneCaptureEnabled`는 줌과 함께 로컬 호출 유지).
@@ -193,7 +215,7 @@ DS 안전 가드 + 액터 복제 기반 마련 + **재장전/탄약/무기 픽�
 #### 위험 요소 / GC·생명주기
 - **GC:** 신규 `TObjectPtr< AActor > RepCurrentWeapon`은 `UPROPERTY`이므로 GC 추적됨. 기존 약참조 `CurrentWeapon`과 이중 보유 시 수명 혼선 주의 — `OnRep`/`Drop`에서 동시 정리.
 - **타이머 람다:** 임팩트 필드 제거 람다(`.cpp:785`)는 `TWeakObjectPtr` 캡처로 이미 안전. 신규 RPC 경로에서 람다 캡처 금지(멤버 함수 콜백 사용).
-- **DS 크래시:** 2-A 가드 누락 시 DS에서 위젯/싱글턴 접근 크래시(외부 사례 다수). 반드시 선행.
+- **DS 안전(정정):** 현재 코드는 HUD/싱글턴 접근부에 널체크가 있어 **2-A 미적용이어도 DS 크래시는 나지 않음**(실측 확인). 2-A는 크래시 방지가 아니라 낭비 제거·패키징 빌드 견고성 목적의 **권장 사항**. 단, 향후 신규로 추가하는 UI/카메라/이펙트 코드는 널체크에 의존하지 말고 `IsLocallyControlled()`/`GetNetMode()` 가드를 처음부터 둘 것.
 - **Attach 복제:** 무기 attach가 클라에서 소켓 미스매치 시 무기가 원점에 보일 수 있음 — `OnRep_CurrentWeapon`에서 재attach 보장.
 
 #### 검증 방법 (멀티 PIE)
