@@ -8,6 +8,7 @@
 ATPSPickUpBase::ATPSPickUpBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	bReplicates = true;
 }
 
 // Called when the game starts or when spawned
@@ -23,7 +24,8 @@ void ATPSPickUpBase::BeginPlay()
 // 무기를 줍는 상호작용을 실행한다.
 bool ATPSPickUpBase::HandlePickUpWeaponInteract( AActor* OtherActor )
 {
-	// TODO : 액터 디스폰 처리 및 정리
+	if ( !HasAuthority() ) return false; 
+	 
 	return Destroy();
 }
 
@@ -31,6 +33,8 @@ bool ATPSPickUpBase::HandlePickUpWeaponInteract( AActor* OtherActor )
 void ATPSPickUpBase::OnBeginOverlap( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult )
 {
+	if ( !HasAuthority() ) return;
+	
 	HandlePickUpWeaponInteract( this );
 }
 

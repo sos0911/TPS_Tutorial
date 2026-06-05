@@ -25,6 +25,7 @@
 #include "Log/TPSLog.h"
 #include "Logic/ITPSInteractionActorInterface.h"
 #include "Manager/TPSUIManager.h"
+#include "Net/UnrealNetwork.h"
 #include "UI/TPSHUD.h"
 #include "Actors/TPSEquipSniperRifle.h"
 #include "Util/TPSUtil.h"
@@ -123,11 +124,21 @@ void ATPSCharacter::EndPlay( const EEndPlayReason::Type EndPlayReason )
 	Super::EndPlay( EndPlayReason );
 }
 
+// 복제 프로퍼티를 등록한다.
+void ATPSCharacter::GetLifetimeReplicatedProps( TArray< FLifetimeProperty >& OutLifetimeProps ) const
+{
+	Super::GetLifetimeReplicatedProps( OutLifetimeProps );
+
+	DOREPLIFETIME( ATPSCharacter, CurrentWeapon );
+	DOREPLIFETIME( ATPSCharacter, CurrentWeaponType );
+	DOREPLIFETIME( ATPSCharacter, CurrentBullet );
+}
+
 // 무기를 줍는 상호작용을 실행한다.
 bool ATPSCharacter::HandlePickUpWeaponInteract( AActor* OtherActor )
 {
 	// 무기를 이미 장착 중이라면 추가로 주울 수 없다.
-	if ( CurrentWeapon.IsValid() ) return false;
+	if ( IsValid( CurrentWeapon ) ) return false;
 
 	ATPSPickUpBase* pickUpActor = Cast< ATPSPickUpBase >( OtherActor );
 	if ( !pickUpActor ) return false;
@@ -271,27 +282,6 @@ void ATPSCharacter::Tick( float DeltaTime )
 
 	if ( IsJumping && GetCharacterMovement() && !GetCharacterMovement()->IsFalling() ) IsJumping = false;
 }
-
-// // 입력 액션에 콜백을 바인딩한다.
-// void ATPSCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputComponent )
-// {
-// 	Super::SetupPlayerInputComponent( PlayerInputComponent );
-//
-// 	if ( UEnhancedInputComponent* eic = Cast< UEnhancedInputComponent >( PlayerInputComponent ) )
-// 	{
-// 		if ( SprintAction )
-// 		{
-// 			eic->BindAction( SprintAction, ETriggerEvent::Started,   this, &ATPSCharacter::OnSprintPressed  );
-// 			eic->BindAction( SprintAction, ETriggerEvent::Completed, this, &ATPSCharacter::OnSprintReleased );
-// 			eic->BindAction( SprintAction, ETriggerEvent::Canceled,  this, &ATPSCharacter::OnSprintReleased );
-// 		}
-//
-// 		if ( ReloadAction )
-// 		{
-// 			eic->BindAction( ReloadAction, ETriggerEvent::Started, this, &ATPSCharacter::OnReload );
-// 		}
-// 	}
-// }
 
 // 스프린트 입력 시작 시 Sprint 어빌리티를 활성화한다.
 void ATPSCharacter::OnSprintPressed( const FInputActionValue& /*Value*/ )
@@ -549,7 +539,7 @@ void ATPSCharacter::DoJump( const FInputActionValue& Value )
 void ATPSCharacter::Drop( const FInputActionValue& Value )
 {
 	if ( Value.GetValueType() != EInputActionValueType::Boolean ) return;
-	if ( !CurrentWeapon.IsValid() ) return;
+	if ( !IsValid( CurrentWeapon ) ) return;
 
 	UTPSDataComponent* dataComponent = TPSUtil::GetValueForObjProp< UTPSDataComponent >( CurrentWeapon.Get() );
 	if ( !dataComponent ) return;
@@ -639,7 +629,7 @@ void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
 	APlayerController* playerController = Cast< APlayerController >( GetController() );
 	if ( !playerController ) return;
 	// 1인칭인데 무기가 없는 경우에는 줌을 허용하지 않는다.
-	if ( !IsTPSMode && !CurrentWeapon.IsValid() ) return;
+	if ( !IsTPSMode && !IsValid( CurrentWeapon ) ) return;
 
 	IsZoomMode = !IsZoomMode;
 
@@ -676,7 +666,7 @@ void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
 		sniperRifle->SetSceneCaptureEnabled( IsZoomMode );
 	}
 
-	if ( !CurrentWeapon.IsValid() )      _ToggleHUDUI( false );
+	if ( !IsValid( CurrentWeapon ) )     _ToggleHUDUI( false );
 	else if ( !IsTPSMode && IsZoomMode ) _ToggleHUDUI( false );
 	else                                 _ToggleHUDUI( true  );
 }
@@ -684,7 +674,7 @@ void ATPSCharacter::ToggleZoomMode( const FInputActionValue& Value )
 // 무기를 발사하는 상호작용을 실행한다.
 bool ATPSCharacter::HandleFireWeaponInteract()
 {
-	if ( !CurrentWeapon.IsValid() || CurrentWeaponType == EWeaponType::Max ) return false;
+	if ( !IsValid( CurrentWeapon ) || CurrentWeaponType == EWeaponType::Max ) return false;
 
 	// 재장전 중에는 발사 불가
 	if ( IsReloading ) return false;
@@ -700,7 +690,7 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 	--CurrentBullet;
 	_RefreshWeaponHUD();
 
-	if ( ITPSEquipInteractionActorInterface* interactionEquipActorInterface = Cast< ITPSEquipInteractionActorInterface >( CurrentWeapon ) )
+	if ( ITPSEquipInteractionActorInterface* interactionEquipActorInterface = Cast< ITPSEquipInteractionActorInterface >( CurrentWeapon.Get() ) )
 	{
 		interactionEquipActorInterface->HandleFireWeaponInteract();
 	}
@@ -777,21 +767,24 @@ bool ATPSCharacter::HandleFireWeaponInteract()
 				bHit = GetWorld()->LineTraceSingleByObjectType( hitResult, rayStartLoc, rayEndLoc, FCollisionObjectQueryParams( objTypes ), queryParams );
 				if ( bHit )
 				{
-					FActorSpawnParameters spawnParams;
-					spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-					ATPSShotImpactField* fieldActor = GetWorld()->SpawnActor< ATPSShotImpactField >(
-						LoadClass< ATPSShotImpactField >( nullptr, *ATPSShotImpactField::GetPath() ),
-						FVector( hitResult.ImpactPoint ), FRotator(), spawnParams );
-
-					FTimerHandle removeImpactFieldTimerHandle;
-					TWeakObjectPtr< ATPSShotImpactField > weakFieldActor = fieldActor;
-					GetWorldTimerManager().SetTimer( removeImpactFieldTimerHandle, [ weakFieldActor ] ()
+					if ( GetNetMode() != NM_DedicatedServer )
 					{
-						if ( !weakFieldActor.IsValid() ) return;
+						FActorSpawnParameters spawnParams;
+						spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-						weakFieldActor->Destroy();
-					}, 0.1f, false );
+						ATPSShotImpactField* fieldActor = GetWorld()->SpawnActor< ATPSShotImpactField >(
+							LoadClass< ATPSShotImpactField >( nullptr, *ATPSShotImpactField::GetPath() ),
+							FVector( hitResult.ImpactPoint ), FRotator(), spawnParams );
+
+						FTimerHandle removeImpactFieldTimerHandle;
+						TWeakObjectPtr< ATPSShotImpactField > weakFieldActor = fieldActor;
+						GetWorldTimerManager().SetTimer( removeImpactFieldTimerHandle, [ weakFieldActor ] ()
+						{
+							if ( !weakFieldActor.IsValid() ) return;
+
+							weakFieldActor->Destroy();
+						}, 0.1f, false );	
+					}
 				}
 			}
 
@@ -844,7 +837,7 @@ void ATPSCharacter::Fire( const bool InIsFiring )
 void ATPSCharacter::OnReload( const FInputActionValue& /*Value*/ )
 {
 	// 무기 미장착 / 이미 재장전 중이면 무시
-	if ( !CurrentWeapon.IsValid() || CurrentWeaponType == EWeaponType::Max ) return;
+	if ( !IsValid( CurrentWeapon ) || CurrentWeaponType == EWeaponType::Max ) return;
 	if ( IsReloading ) return;
 
 	// 이미 가득 찬 경우 재장전 불필요
@@ -867,7 +860,7 @@ void ATPSCharacter::_FinishReload()
 	IsReloading = false;
 
 	// 재장전 도중 무기를 잃었을 수 있으므로 재확인
-	if ( !CurrentWeapon.IsValid() || CurrentWeaponType == EWeaponType::Max ) return;
+	if ( !IsValid( CurrentWeapon ) || CurrentWeaponType == EWeaponType::Max ) return;
 
 	CurrentBullet = GetWeaponData().MagazineSize;
 
@@ -883,5 +876,25 @@ void ATPSCharacter::_RefreshWeaponHUD() const
 	{
 		hudUI->RefreshWeaponInfo( CurrentWeaponType, CurrentBullet );
 	}
+}
+
+// 무기 복제 도착 시 HUD를 동기화한다.
+void ATPSCharacter::OnRep_CurrentWeapon()
+{
+	if ( IsValid( CurrentWeapon ) )
+	{
+		if ( IsTPSMode || !IsZoomMode ) _ToggleHUDUI( true );
+		_RefreshWeaponHUD();
+	}
+	else
+	{
+		_ToggleHUDUI( false );
+	}
+}
+
+// 탄약 복제 도착 시 HUD를 갱신한다.
+void ATPSCharacter::OnRep_CurrentBullet()
+{
+	_RefreshWeaponHUD();
 }
 

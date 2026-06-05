@@ -57,7 +57,7 @@ protected:
 	bool IsZoomMode = false;
 
 	// 현재 무기 타입
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "State" )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Replicated, Category = "State" )
 	EWeaponType CurrentWeaponType = EWeaponType::Max;
 
 	// 현재 무기 발사 중인가 여부
@@ -111,6 +111,14 @@ private:
 		Roll,  // roll
 		Yaw    // yaw
 	};
+	
+	// 현재 장착 무기 ( 서버 권위 → 클라 복제 )
+	UPROPERTY( ReplicatedUsing = OnRep_CurrentWeapon )
+	TObjectPtr< AActor > CurrentWeapon = nullptr;
+	
+	// 현재 장착 무기의 잔여 장탄수
+	UPROPERTY( ReplicatedUsing = OnRep_CurrentBullet )
+	int32 CurrentBullet = 0;
 
 private:
 	const FString TPSCameraCompName     = TEXT( "TPSCamera" ); // TPS 카메라 컴포넌트 이름
@@ -124,14 +132,12 @@ private:
 	USkeletalMeshComponent* BodyComp		  = nullptr; // 몸통 컴포넌트 객체
 
 	UChildActorComponent*   CurrentCameraComp = nullptr; // 현재 사용 중인 카메라 컴포넌트 객체
-	TPSActorPtr				CurrentWeapon	  = nullptr; // 현재 장착중인 무기 객체
 
 	bool IsLeaning                  = false; // 기울이고 있는가 여부
 	bool IsJumping                  = false; // 점프하고 있는가 여부
 
 	float TargetRollValue           = 0.0f;  // 목표 기울이기 값
 
-	int32 CurrentBullet             = 0;     // 현재 장착 무기의 잔여 장탄수
 	bool  IsReloading               = false; // 재장전 진행 중인가 여부
 	FTimerHandle ReloadTimerHandle;          // 재장전 완료 타이머 핸들
 
@@ -183,9 +189,6 @@ public:
 
 	// Called every frame
 	virtual void Tick( float DeltaTime ) override;
-
-	// // Called to bind functionality to input
-	// virtual void SetupPlayerInputComponent( class UInputComponent* PlayerInputComponent ) override;
 
 	// IAbilitySystemInterface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -246,4 +249,15 @@ private:
 
 	// GAS — 사망 처리 (라그돌, 입력 비활성)
 	void _HandleOnDeath();
+
+	// 복제 프로퍼티를 등록한다.
+	virtual void GetLifetimeReplicatedProps( TArray< FLifetimeProperty >& OutLifetimeProps ) const override;
+
+	// 무기 복제 도착 시 HUD를 동기화한다.
+	UFUNCTION()
+	void OnRep_CurrentWeapon();
+
+	// 탄약 복제 도착 시 HUD를 갱신한다.
+	UFUNCTION()
+	void OnRep_CurrentBullet();
 };

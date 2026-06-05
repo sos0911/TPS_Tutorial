@@ -253,7 +253,62 @@ GAS 게임 권위(데미지, 사망, 스프린트 속도, 발사)를 서버 권�
   - **권위(서버):** 라인트레이스, 탄약 차감(`--CurrentBullet`, `.cpp:696`), 데미지 적용(피격 대상 ASC에 `UTPSGameplayEffect_Damage::ApplyDamage`).
   - **예측(LocalPredicted):** 발사 입력 즉시 클라 반응(반동 입력 `.cpp:747-748`은 로컬 코스메틱).
   - **코스메틱(Multicast/로컬):** 몽타주(`.cpp:735`), 임팩트 필드 스폰(`.cpp:779`), 반동. Multicast RPC `MulticastPlayFireFX(ImpactPoint)`로 각 클라 로컬 생성. DS에선 FX 스킵(`NM_DedicatedServer` 가드).
-- `Fire( bool )`(`.cpp:830`)/입력 경로 → `ASC->TryActivateAbilityByTag( TAG_Ability_Fire )`로 변경.
+- `Fire( bool )`(`.cpp:834`)/입력 경로 → `ASC->TryActivateAbilityByTag( TAG_Ability_Fire )`로 변경.
+
+#### 예측 / 보정 모델 (Client Prediction & Reconciliation) — Sprint·Fire 공통
+
+> `LocalPredicted` 어빌리티(Sprint·Fire)에 적용되는 보충 설계. 구현 전 이 절을 먼저 읽고 "무엇을 예측하고 무엇을 서버 권위로 둘지"를 확정한다.
+
+**(가) 보편 4단계 사이클**
+```
+① 예측(Predict)   : 클라가 입력 즉시 결과를 가정하고 로컬에서 먼저 실행
+② 전송(Send)      : 같은 입력/활성화를 서버로 전송 (예측 키 동반)
+③ 권위(Authority) : 서버가 권위 실행 → 정답 상태 생성 후 복제
+④ 보정(Reconcile) : 예측값 vs 서버 정답 비교 → 일치면 그대로, 불일치면 롤백/덮어쓰기
+```
+핑이 0이면 예측이 항상 맞아 티가 안 나고, 핑이 높을수록 보정(되감김)이 가끔 보인다. 이동(`CharacterMovementComponent`)은 이미 자체 예측(SavedMove+replay)을 내장하고 있어 별도 구현이 필요 없다.
+
+**(나) GAS가 자동화하는 부분 — `FPredictionKey`**
+- `NetExecutionPolicy = LocalPredicted` 설정 시, GAS가 활성화 때 **예측 키**를 발급하고 어빌리티를 로컬 즉시 실행 + 활성화 RPC와 함께 서버 전송.
+- 클라가 어빌리티 안에서 적용하는 GameplayEffect/GameplayCue/태그는 그 예측 키로 태깅된 **예측된 변경**이 된다.
+- 서버 권위 GE가 복제돼 오면 클라의 예측 GE가 **매끄럽게 교체**되고, 서버가 거부하면 예측 키 rejected로 **자동 롤백**. → 보정 코드를 거의 직접 짜지 않는다.
+
+**(다) 예측 가능 vs 예측 금지 (핵심 룰)**
+
+| 예측 OK (내 상태/표현) | 예측 금지 (서버만 아는 것) |
+|---|---|
+| 어빌리티 활성화 자체 | **남에게 주는 데미지** |
+| 내 코스메틱: 머즐 플래시, 발사/재장전 몽타주, 반동 | 상대 사망 판정 |
+| 내 자원 표시(탄약·쿨다운·스태미나) | 라인트레이스 실제 명중 여부의 확정 |
+| 지속형 GameplayEffect, GameplayCue | 월드 진실 상태 변경 |
+
+원칙: **"내 것"은 예측해도 되나 "남/월드의 결과"는 예측하지 않는다.** 데미지·확정 자원 차감·사망은 항상 `HasAuthority()` 뒤에서만 적용.
+
+**(라) 발사 어빌리티 분기 패턴 (구현 가이드)**
+```
+ActivateAbility (클라·서버 공통 실행)
+  - 머즐 플래시 / 몽타주 / 반동           → GameplayCue (예측, 코스메틱)
+  - 로컬 탄약 -1 표시                      → 예측 (서버 확정값 도착 시 교체)
+  if ( HasAuthority() )                    → 서버에서만
+  {
+      라인트레이스(진짜 히트 판정)
+      대상에 Damage GE 적용
+      CommitAbility → 탄약 확정 차감
+      사망 판정
+  }
+  // 임팩트 필드 등 FX는 GameplayCue/Multicast로, DS(NM_DedicatedServer)는 스킵 (2-B 가드)
+```
+
+**(마) 히트 판정 정책**
+- **서버 권위 트레이스(기본 채택):** 클라는 트레이서/탄착 등 시각 피드백만 예측, **데미지는 서버 트레이스로 판정.** 간단·안전. 고핑 시 "맞췄는데 안 맞음" 가능.
+- **랙 보상(lag compensation):** 서버가 클라 화면 기준 과거 시점으로 대상을 되감아 판정. 정교하나 복잡 → **본 프로젝트 범위 밖(향후 과제).**
+
+**(바) 단계적 도입 권장 (학습 목적)**
+1. **길 A — 순수 Server RPC(예측 없음)** 로 먼저 동작 → 권위·복제 개념 체득. 입력 지연은 감수.
+2. 안정화 후 **`LocalPredicted` 전환** → 코스메틱만 예측해 반응성 확보, 데미지는 계속 서버 권위.
+3. 랙 보상은 필요 시 추후.
+
+> 정리: GAS가 예측 사이클(키 발급·롤백·교체)은 자동 처리하므로, 구현자가 결정할 것은 **① 무엇을 `HasAuthority()` 뒤에 둘지(권위) ② 무엇을 GameplayCue로 뺄지(코스메틱)** 의 분리뿐이다.
 
 **(3-D) Damage / Death 권위화**
 - 데미지: `UTPSGameplayEffect_Damage`(Instant, SetByCaller 음수 컨벤션) 적용을 **서버에서만**. `PostGameplayEffectExecute`(`.cpp:53`)는 서버에서 Health 변경 → 복제.

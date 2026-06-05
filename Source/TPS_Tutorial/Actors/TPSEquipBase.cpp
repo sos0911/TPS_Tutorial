@@ -11,6 +11,8 @@ ATPSEquipBase::ATPSEquipBase()
 {
 	// 현재 시점에서 틱은 필요하지 않으므로 비활성화 처리.
 	PrimaryActorTick.bCanEverTick = false;
+	bReplicates = true;
+	SetReplicateMovement( false );
 
 	WeaponComp = CreateDefaultSubobject< USkeletalMeshComponent >( TEXT( "Weapon" ) );
 	RootComponent = WeaponComp;
