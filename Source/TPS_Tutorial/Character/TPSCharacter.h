@@ -133,12 +133,10 @@ private:
 
 	UChildActorComponent*   CurrentCameraComp = nullptr; // 현재 사용 중인 카메라 컴포넌트 객체
 
-	bool IsLeaning                  = false; // 기울이고 있는가 여부
-	bool IsJumping                  = false; // 점프하고 있는가 여부
-
-	float TargetRollValue           = 0.0f;  // 목표 기울이기 값
-
-	bool  IsReloading               = false; // 재장전 진행 중인가 여부
+	bool         IsLeaning          = false; // 기울이고 있는가 여부
+	bool         IsJumping          = false; // 점프하고 있는가 여부
+	float        TargetRollValue    = 0.0f;  // 목표 기울이기 값
+	bool         IsReloading        = false; // 재장전 진행 중인가 여부
 	FTimerHandle ReloadTimerHandle;          // 재장전 완료 타이머 핸들
 
 public:
@@ -182,6 +180,16 @@ protected:
 	// 무기를 발사한다.
 	UFUNCTION( BlueprintCallable, Category = "Interaction Control" )
 	void Fire( const bool InIsFiring );
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////// server RPC ///////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 무기를 드랍한다.
+	UFUNCTION( Server, Reliable )
+	void ServerDrop();
+	
+	// 무기를 드랍한다.
+	void ServerDrop_Implementation();
 
 public:
 	// Sets default values for this character's properties

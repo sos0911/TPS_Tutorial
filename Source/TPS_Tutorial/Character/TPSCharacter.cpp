@@ -31,6 +31,38 @@
 #include "Util/TPSUtil.h"
 
 
+// 무기를 드랍한다.
+void ATPSCharacter::ServerDrop_Implementation()
+{
+	UTPSDataComponent* dataComponent = TPSUtil::GetValueForObjProp< UTPSDataComponent >( CurrentWeapon.Get() );
+	if ( !dataComponent ) return;
+
+	const FWeaponTableData* weaponData = dataComponent->GetData< FWeaponTableData >();
+	if ( !weaponData ) return;
+
+	const FVector  dropLocation = GetActorLocation() + GetActorForwardVector() * 200.0f;
+	const FRotator dropRotation = GetActorRotation();
+
+	FActorSpawnParameters spawnParams;
+	// spawnParams.Owner                          = nullptr;
+	// spawnParams.Instigator                     = GetInstigator();
+	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	UWorld* world = GetWorld();
+	if ( !world ) return;
+
+	world->SpawnActor< AActor >( weaponData->PickUpWeapon, FTransform( dropRotation, dropLocation ), spawnParams );
+
+	CurrentWeapon->Destroy();
+	CurrentWeapon = nullptr;
+	CurrentWeaponType = EWeaponType::None;
+
+	// 장탄수/재장전 상태 초기화 (진행 중이던 재장전 타이머 취소)
+	CurrentBullet = 0;
+	IsReloading   = false;
+	GetWorldTimerManager().ClearTimer( ReloadTimerHandle );
+}
+
 // 캐릭터 기본값과 GAS 서브오브젝트(ASC/AttributeSet)를 생성한다.
 ATPSCharacter::ATPSCharacter()
 {
@@ -137,6 +169,8 @@ void ATPSCharacter::GetLifetimeReplicatedProps( TArray< FLifetimeProperty >& Out
 // 무기를 줍는 상호작용을 실행한다.
 bool ATPSCharacter::HandlePickUpWeaponInteract( AActor* OtherActor )
 {
+	if ( !HasAuthority() ) return false;
+	
 	// 무기를 이미 장착 중이라면 추가로 주울 수 없다.
 	if ( IsValid( CurrentWeapon ) ) return false;
 
@@ -423,6 +457,9 @@ void ATPSCharacter::_HandleOnDeath()
 // 오버랩이 시작되었음을 알리는 이벤트를 처리한다.
 void ATPSCharacter::OnBeginOverlap( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult )
 {
+	// NOTE : DS에서만 처리한다.
+	if ( !HasAuthority() ) return;
+	
 	ITPSPickUpInteractionActorInterface* interactionPickUpActorInterface = Cast< ITPSPickUpInteractionActorInterface >( OtherActor );
 	if ( !interactionPickUpActorInterface ) return;
 
@@ -540,26 +577,8 @@ void ATPSCharacter::Drop( const FInputActionValue& Value )
 {
 	if ( Value.GetValueType() != EInputActionValueType::Boolean ) return;
 	if ( !IsValid( CurrentWeapon ) ) return;
-
-	UTPSDataComponent* dataComponent = TPSUtil::GetValueForObjProp< UTPSDataComponent >( CurrentWeapon.Get() );
-	if ( !dataComponent ) return;
-
-	const FWeaponTableData* weaponData = dataComponent->GetData< FWeaponTableData >();
-	if ( !weaponData ) return;
-
-	const FVector  dropLocation = GetActorLocation() + GetActorForwardVector() * 200.0f;
-	const FRotator dropRotation = GetActorRotation();
-
-	FActorSpawnParameters spawnParams;
-	// spawnParams.Owner                          = nullptr;
-	// spawnParams.Instigator                     = GetInstigator();
-	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-	UWorld* world = GetWorld();
-	if ( !world ) return;
-
-	world->SpawnActor< AActor >( weaponData->PickUpWeapon, FTransform( dropRotation, dropLocation ), spawnParams );
-
+	
+	// NOTE : UI 관련 처리는 먼저 클라단에서 선제 조치한다.
 	// 줌 상태에서 드랍하는 경우 카메라와 줌 상태를 원복한다.
 	if ( IsZoomMode )
 	{
@@ -573,17 +592,10 @@ void ATPSCharacter::Drop( const FInputActionValue& Value )
 		}
 	}
 
-	CurrentWeapon->Destroy();
-	CurrentWeapon = nullptr;
-	CurrentWeaponType = EWeaponType::None;
-
-	// 장탄수/재장전 상태 초기화 (진행 중이던 재장전 타이머 취소)
-	CurrentBullet = 0;
-	IsReloading   = false;
-	GetWorldTimerManager().ClearTimer( ReloadTimerHandle );
-
 	_ToggleHUDUI( false );
 	_RefreshWeaponHUD();
+	
+	ServerDrop();
 }
 
 // 카메라 시점을 변경한다.
@@ -849,6 +861,7 @@ void ATPSCharacter::OnReload( const FInputActionValue& /*Value*/ )
 	// NOTE : 여기서 무기 타입별 재장전 몽타주를 재생하고, ReloadTime을 몽타주 길이에 맞추면 더 자연스럽다.
 
 	// ReloadTime 경과 후 탄창 보충
+	GetWorldTimerManager().ClearTimer( ReloadTimerHandle );
 	GetWorldTimerManager().SetTimer( ReloadTimerHandle, this, &ATPSCharacter::_FinishReload, ReloadTime, false );
 
 	UE_LOG( LogGameplay, Log, TEXT( "[TPS] Reload started (%.1fs)" ), ReloadTime );
